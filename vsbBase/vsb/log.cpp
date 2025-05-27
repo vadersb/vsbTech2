@@ -1,11 +1,52 @@
 //(C) 2025 Alexander Samarin
 
 #include "log.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace vsb::log
 {
-	void Init()
-	{
+	static std::shared_ptr<spdlog::logger> s_logger;
 
+	static const std::string LoggerName = "Game";
+
+	void Init(const bool enableConsole, std::string_view logFile)
+	{
+		Uninit();
+
+		std::vector<spdlog::sink_ptr> sinks;
+
+		if (enableConsole)
+		{
+			const auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+			console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+			sinks.push_back(console_sink);
+		}
+
+		if (!logFile.empty())
+		{
+			sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::string(logFile)));
+		}
+
+		s_logger = std::make_shared<spdlog::logger>(LoggerName, sinks.begin(), sinks.end());
+		spdlog::set_default_logger(s_logger);
+	}
+
+
+	void SetLevel(Level level)
+	{
+		spdlog::set_level(static_cast<spdlog::level::level_enum>(level));
+	}
+
+
+	void Uninit()
+	{
+		if (s_logger)
+		{
+			s_logger->flush();
+			spdlog::drop(LoggerName);  // Remove our specific logger
+			spdlog::shutdown();    // Optional: Full teardown
+			s_logger.reset();      // Clear shared_ptr
+		}
 	}
 }

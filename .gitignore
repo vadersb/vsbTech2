@@ -37,3 +37,4 @@
 
 # CMake build dirs
 cmake-build-*/
+/third_party/libs/

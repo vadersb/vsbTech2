@@ -12,3 +12,5 @@ target_include_directories(vsbBase
 
 # Set C++ standard
 target_compile_features(vsbBase PUBLIC cxx_std_23)
+
+target_link_libraries(vsbBase PRIVATE spdlog::spdlog)

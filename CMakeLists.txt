@@ -43,28 +43,27 @@ else()
 endif()
 
 # Third-party dependencies
-#add_subdirectory(ThirdParty)
+add_subdirectory(third_party)
 
 # Core libraries
 add_subdirectory(vsbBase)
-#add_subdirectory(MyGameTech)
 
 # Optional components
 if(BUILD_TOOLS)
-    add_subdirectory(MyTools)
+    add_subdirectory(tools)
 endif()
 
 if(BUILD_TESTS)
     enable_testing()
-    add_subdirectory(Tests)
+    add_subdirectory(tests)
 endif()
 
 if(BUILD_SAMPLES)
-    add_subdirectory(Samples)
+    add_subdirectory(samples)
 endif()
 
 if(BUILD_SANDBOX)
-    add_subdirectory(Sandbox)
+    add_subdirectory(sandbox)
 endif()
 
 # Install configuration
