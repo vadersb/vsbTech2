@@ -18,7 +18,7 @@ namespace vsb::log
 
 
 	//init and wrap up
-	void Init(bool enableConsole, std::string_view logFile);
+	void Init(bool enableConsole, std::string_view logFile = {});
 	void SetLevel(Level level);
 	void Uninit();
 
