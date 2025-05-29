@@ -16,7 +16,7 @@ namespace vsb
 
 	//hash calculation
 	template<typename T>
-	constexpr Hash64 CalculateHash64(const T &v)
+	constexpr Hash64 CalculateHash64(const T &v) noexcept
 	{
 		static unsigned char buffer[sizeof(T)];
 
@@ -38,7 +38,7 @@ namespace vsb
 	template<>
 	struct Hash64Provider<Hash64>
 	{
-		constexpr static Hash64 Get(const Hash64& key)
+		constexpr static Hash64 Get(const Hash64& key) noexcept
 		{
 			return key;
 		}
@@ -58,7 +58,7 @@ namespace vsb
 	template<concepts::HasCachedHash64 Key>
 	struct Hash64Provider<Key>
 	{
-		constexpr static Hash64 Get(const Key& cachedHash64Holder)
+		constexpr static Hash64 Get(const Key& cachedHash64Holder) noexcept
 		{
 			return cachedHash64Holder.GetCachedHash64();
 		}
@@ -70,8 +70,6 @@ namespace vsb
 	{
 		constexpr static Hash64 Get(const Key& key)
 		{
-			static_assert(sizeof(Key) <= sizeof(Hash64), "Key too large for Hash64");
-
 			if constexpr (sizeof(Key) == sizeof(Hash64))
 			{
 				return std::bit_cast<Hash64>(key);  // No-op if same size/representation
@@ -94,7 +92,7 @@ namespace vsb
 	template<std::convertible_to<std::string_view> Key>
 	struct Hash64Provider<Key>
 	{
-		constexpr static Hash64 Get(const std::string_view& key)
+		constexpr static Hash64 Get(const std::string_view& key) noexcept
 		{
 			return constexpr_xxh3::XXH3_64bits_const(key.data(), key.size());
 		}
@@ -104,7 +102,7 @@ namespace vsb
 	template<>
 	struct Hash64Provider<const char*>
 	{
-		constexpr static Hash64 Get(const char* key)
+		constexpr static Hash64 Get(const char* key) noexcept
 		{
 			return constexpr_xxh3::XXH3_64bits_const(key, std::char_traits<char>::length(key));
 		}
@@ -112,7 +110,7 @@ namespace vsb
 
 
 	template<typename T>
-	constexpr Hash64 GetHash64(const T& v)
+	constexpr Hash64 GetHash64(const T& v) noexcept
 	{
 		static_assert(
 				requires(const T& key)
