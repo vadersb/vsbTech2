@@ -170,6 +170,7 @@ namespace vsb::memory
 				return;
 			}
 
+			[[maybe_unused]]
 			const size_t sizeInBytes = sizeof(T) * n;
 
 			if constexpr (allocationStrategy == AllocationStrategy::SingleThreadedPool)

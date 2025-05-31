@@ -12,7 +12,7 @@ namespace vsb::internal
 		if (m_freeIndices.IsEmpty())
 		{
 			VSBLOG_CRITICAL("ObjectRegistry is out of free slots!");
-			return Handle{}; // Return empty handle instead of asserting
+			return Handle{}; // Return an empty handle instead of asserting
 		}
 
 		const Index index = m_freeIndices.Pop();
@@ -127,7 +127,6 @@ namespace vsb::internal
 
 	ObjectRegistry::ObjectRegistry()
 	{
-		// Use consistent Index type and reverse iteration for better cache locality
 		for (Index i = ObjectRegistryCapacity - 1; i >= 0; i--)
 		{
 			m_freeIndices.Push(static_cast<uint32_t>(i));

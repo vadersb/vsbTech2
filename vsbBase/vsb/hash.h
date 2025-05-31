@@ -2,6 +2,7 @@
 
 #pragma once
 #include <cstdint>
+#include <cstring>
 #include <string_view>
 
 #include "constexpr-xxh3/constexpr-xxh3.h"

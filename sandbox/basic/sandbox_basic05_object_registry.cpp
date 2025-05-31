@@ -4,6 +4,7 @@
 
 #include "vsb/log.h"
 #include "vsb/debug.h"
+#include "vsb/objects/hnd.h"
 #include "vsb/objects/object.h"
 #include "vsb/objects/internal/object_registry.h"
 
@@ -17,7 +18,7 @@ namespace
 		explicit TestScopedObject(const int value) : vsb::Object(vsb::ObjectHint::Scoped), m_value(value)
 		{}
 
-		int GetValue() const {return m_value;}
+		[[nodiscard]] int GetValue() const {return m_value;}
 
 	private:
 
@@ -40,6 +41,19 @@ int main()
 	{
 		TestScopedObject t1(123);
 		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+
+		auto hnd1 = vsb::CreateHnd(&t1);
+
+		VSBLOG_INFO("hnd1 is valid: {}", hnd1.IsValid());
+
+		auto pT1 = hnd1.ValidateAndGet();
+
+		if (pT1 != nullptr)
+		{
+			VSBLOG_INFO("pT1 value: {}", pT1->GetValue());
+		}
+
+		hnd1.Reset();
 
 		TestScopedObject t2(456);
 		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());

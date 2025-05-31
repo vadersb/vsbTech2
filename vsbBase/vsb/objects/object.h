@@ -5,6 +5,8 @@
 
 namespace vsb
 {
+	template<typename T> class Hnd;
+
 	enum class ObjectHint : uint8_t
 	{
 		Unspecified,
@@ -16,6 +18,9 @@ namespace vsb
 
 	class Object
 	{
+
+		template<typename T> friend class Hnd;
+
 	public:
 		//no copying/moving
 		Object(const Object&) = delete;
@@ -31,6 +36,8 @@ namespace vsb
 
 
 	private:
+
+		[[nodiscard]] internal::Handle GetHandle() const {return m_handle;}
 
 		internal::Handle RegisterHandle(ObjectHint objectHint);
 

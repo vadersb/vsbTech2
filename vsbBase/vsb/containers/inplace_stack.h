@@ -62,7 +62,7 @@ namespace vsb
 			VSB_ASSERT(m_count > 0, "InPlaceStack underflow");
 			--m_count;
 			
-			// Create copy/move before destroying
+			// Create a copy/move before destroying
 			TValueType* ptr = GetPtr(m_count);
 			TValueType value = std::move(*ptr);
 			

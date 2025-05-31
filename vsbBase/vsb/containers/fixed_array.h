@@ -17,7 +17,7 @@ namespace vsb
 		FixedArray() = default;
 		~FixedArray() = default;
 
-		// Constructor with initializer list
+		// Constructor with an initializer list
 		FixedArray(std::initializer_list<TValueType> init)
 		{
 			if (init.size() > Size)
