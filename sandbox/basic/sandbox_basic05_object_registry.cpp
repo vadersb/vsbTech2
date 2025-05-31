@@ -1,5 +1,7 @@
 //(C) 2025 Alexander Samarin
 
+#include <iostream>
+
 #include "vsb/log.h"
 #include "vsb/debug.h"
 #include "vsb/objects/object.h"
@@ -30,6 +32,8 @@ namespace
 
 int main()
 {
+	vsb::internal::ObjectRegistryFinalizer objectRegistryFinalizer;
+
 
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
@@ -47,10 +51,21 @@ int main()
 		VSBLOG_INFO("t2 value: {}", t2.GetValue());
 		VSBLOG_INFO("t3 value: {}", t3.GetValue());
 
+
+		const auto stats = vsb::internal::ObjectRegistry::GetActiveObjectStats();
+
+		VSBLOG_INFO("unspecified objcts count: {}", stats.unspecifiedObjectsCount);
+		VSBLOG_INFO("static objects count: {}", stats.staticObjectsCount);
+		VSBLOG_INFO("scoped objects count: {}", stats.scopedObjectsCount);
+		VSBLOG_INFO("managed objects count: {}", stats.managedObjectsCount);
+
 	}
 
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
+	//std::string str;
+
+	//std::cin >> str;
 
 	return 0;
 }

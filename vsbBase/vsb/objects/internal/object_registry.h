@@ -16,19 +16,35 @@ namespace vsb::internal
 {
 	constexpr Count ObjectRegistryCapacity = 1024 * 32;
 
+	class ObjectRegistryFinalizer
+	{
+	public:
+		~ObjectRegistryFinalizer();
+	};
+
+
 	class ObjectRegistry
 	{
-
+		friend class ObjectRegistryFinalizer;
 		friend class vsb::Object;
 
 	public:
 
+		struct ActiveObjectStats
+		{
+			Count unspecifiedObjectsCount = 0;
+			Count staticObjectsCount = 0;
+			Count scopedObjectsCount = 0;
+			Count managedObjectsCount = 0;
+		};
+
 		//queries
 		static Count GetCurrentlyRegisteredObjectsCount();
-
+		static Count GetExhaustedSlotsCount();
+		static Count GetAvailableSlotsCount();
+		static ActiveObjectStats GetActiveObjectStats();
 
 	private:
-
 
 		Handle RegisterObject(Object* pObject, ObjectHint hint);
 		void   UnregisterObject(const Handle& handle);
@@ -39,6 +55,8 @@ namespace vsb::internal
 		static ObjectRegistry& GetInstance();
 
 		ObjectRegistry();
+
+		static void WrapUp();
 
 		struct Entry
 		{

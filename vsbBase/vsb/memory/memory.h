@@ -47,7 +47,7 @@ namespace vsb::memory
 			if constexpr (allocationStrategy == AllocationStrategy::SingleThreadedPool)
 			{
 				++s_allocations_SingleThreadedPool;
-				return std::malloc(size);; //todo hook the pool
+				return std::malloc(size); //todo hook the pool
 			}
 
 			if constexpr (allocationStrategy == AllocationStrategy::StdChecked)
@@ -132,7 +132,7 @@ namespace vsb::memory
 			if constexpr (allocationStrategy == AllocationStrategy::SingleThreadedPool)
 			{
 				++s_allocations_SingleThreadedPool;
-				return static_cast<T*>(std::malloc(sizeInBytes));; //todo hook the pool
+				return static_cast<T*>(std::malloc(sizeInBytes)); //todo hook the pool
 			}
 
 			if constexpr (allocationStrategy == AllocationStrategy::StdChecked)
