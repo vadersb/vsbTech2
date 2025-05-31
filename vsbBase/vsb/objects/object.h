@@ -5,7 +5,7 @@
 
 namespace vsb
 {
-	enum class ObjectHint
+	enum class ObjectHint : uint8_t
 	{
 		Unspecified,
 		Static,
@@ -16,23 +16,23 @@ namespace vsb
 
 	class Object
 	{
-	protected:
-
-		explicit Object(ObjectHint objectHint = ObjectHint::Unspecified);
-
+	public:
 		//no copying/moving
 		Object(const Object&) = delete;
 		Object& operator=(const Object&) = delete;
 		Object(Object&&) = delete;
 		Object& operator=(Object&&) = delete;
 
+
+	protected:
+
+		explicit Object(ObjectHint objectHint = ObjectHint::Unspecified);
 		virtual ~Object();
 
 
 	private:
 
-		static internal::Handle RegisterHandle(ObjectHint objectHint);
-		static void UnregisterHandle(internal::Handle handle);
+		internal::Handle RegisterHandle(ObjectHint objectHint);
 
 		internal::Handle m_handle;
 	};

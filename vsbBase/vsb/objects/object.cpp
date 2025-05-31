@@ -3,6 +3,7 @@
 
 #include "object.h"
 
+#include "internal/object_registry.h"
 #include "vsb/debug.h"
 
 namespace vsb
@@ -15,19 +16,12 @@ namespace vsb
 
 	Object::~Object()
 	{
-		UnregisterHandle(m_handle);
+		internal::ObjectRegistry::GetInstance().UnregisterObject(m_handle);
 	}
 
 
 	internal::Handle Object::RegisterHandle(ObjectHint objectHint)
 	{
-		//todo ObjectRegistry
-		return {};
-	}
-
-
-	void Object::UnregisterHandle(internal::Handle handle)
-	{
-		//todo ObjectRegistry
+		return internal::ObjectRegistry::GetInstance().RegisterObject(this, objectHint);
 	}
 }

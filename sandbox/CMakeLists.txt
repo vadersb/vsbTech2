@@ -17,3 +17,7 @@ target_link_libraries(sandbox_basic03_memoryalloc vsbBase)
 #04 - inplace containers
 add_executable(sandbox_basic04_inplace_containers basic/sandbox_basic04_inplace_containers.cpp)
 target_link_libraries(sandbox_basic04_inplace_containers vsbBase)
+
+#05 - object registry
+add_executable(sandbox_basic05_object_registry basic/sandbox_basic05_object_registry.cpp)
+target_link_libraries(sandbox_basic05_object_registry vsbBase)
