@@ -13,3 +13,7 @@ target_link_libraries(sandbox_basic02_hashes vsbBase)
 #03 - memory alloc
 add_executable(sandbox_basic03_memoryalloc basic/sandbox_basic03_memoryalloc.cpp)
 target_link_libraries(sandbox_basic03_memoryalloc vsbBase)
+
+#04 - inplace containers
+add_executable(sandbox_basic04_inplace_containers basic/sandbox_basic04_inplace_containers.cpp)
+target_link_libraries(sandbox_basic04_inplace_containers vsbBase)

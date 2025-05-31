@@ -20,6 +20,12 @@ namespace vsb
 
 		explicit Object(ObjectHint objectHint = ObjectHint::Unspecified);
 
+		//no copying/moving
+		Object(const Object&) = delete;
+		Object& operator=(const Object&) = delete;
+		Object(Object&&) = delete;
+		Object& operator=(Object&&) = delete;
+
 		virtual ~Object();
 
 
