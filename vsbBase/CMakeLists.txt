@@ -1,4 +1,5 @@
-add_library(vsbBase)
+add_library(vsbBase
+        vsb/objects/ptr.h)
 
 # Add all source files
 file(GLOB_RECURSE SOURCES "vsb/*.cpp")

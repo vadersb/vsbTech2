@@ -6,6 +6,7 @@
 namespace vsb
 {
 	template<typename T> class Hnd;
+	template<typename T> class Ptr;
 
 	enum class ObjectHint : uint8_t
 	{
@@ -20,6 +21,7 @@ namespace vsb
 	{
 
 		template<typename T> friend class Hnd;
+		template<typename T> friend class Ptr;
 
 	public:
 		//no copying/moving

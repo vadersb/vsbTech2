@@ -1,0 +1,178 @@
+//(C) 2025 Alexander Samarin
+
+#pragma once
+
+
+#ifdef DEBUG
+#define VSB_PTR_VALIDATE
+#endif
+
+#include "internal/handle.h"
+#include "internal/object_registry.h"
+
+
+#ifdef VSB_PTR_VALIDATE
+#define PTR_HANDLE_CHECK VSB_ASSERT(internal::ObjectRegistry::GetInstance().ValidateHandle(m_handle), "");
+#else
+#define PTR_HANDLE_CHECK void(0);
+#endif
+
+
+
+
+
+
+namespace vsb
+{
+	template<typename T>
+	class Ptr
+	{
+	public:
+
+		Ptr() = default;
+		~Ptr() = default;
+
+		Ptr(const Ptr&) = default;
+		Ptr(Ptr&&) = default;
+		Ptr& operator=(const Ptr&) = default;
+		Ptr& operator=(Ptr&&) = default;
+
+
+		template<typename U>
+		explicit(std::is_base_of_v<T, U> == false) Ptr(const Ptr<U>& copyFrom) : m_pointer(ExtractPointer(copyFrom.m_pointer))
+		{
+#ifdef VSB_PTR_VALIDATE
+			if (m_pointer != nullptr)
+			{
+				m_handle = copyFrom.m_handle;
+			}
+#endif
+		}
+
+		template<typename U>
+		explicit(std::is_base_of_v<T, U> == false) Ptr(Ptr<U>&& moveFrom) : m_pointer(ExtractPointer(moveFrom.m_pointer))
+		{
+			moveFrom.m_pointer = nullptr;
+
+#ifdef VSB_PTR_VALIDATE
+			if (m_pointer != nullptr)
+			{
+				m_handle = moveFrom.m_handle;
+			}
+#endif
+
+			moveFrom.m_handle = {};
+		}
+
+
+		template<typename U>
+		explicit(std::is_base_of_v<T, U> == false) Ptr(U* ptr) : m_pointer(ExtractPointer(ptr))
+		{
+#ifdef VSB_PTR_VALIDATE
+			if (m_pointer != nullptr)
+			{
+				auto pBasePtr = dynamic_cast<Object*>(m_pointer);
+				VSB_ASSERT(pBasePtr != nullptr, "Failed to downcast to Object");
+				m_handle = pBasePtr->GetHandle();
+			}
+#endif
+		}
+
+
+		explicit operator bool() const
+		{
+			return m_pointer != nullptr;
+		}
+
+
+		[[nodiscard]] bool IsEmpty() const
+		{
+			return m_pointer == nullptr;
+		}
+
+
+		[[nodiscard]] bool IsValid() const
+		{
+			PTR_HANDLE_CHECK;
+			return m_pointer != nullptr;
+		}
+
+
+		T* operator->() const
+		{
+			VSB_ASSERT(m_pointer != nullptr, "pointer shouldn't be null if addressed via -> operator");
+			PTR_HANDLE_CHECK;
+
+			return m_pointer;
+		}
+
+
+		T* Get() const
+		{
+			PTR_HANDLE_CHECK;
+			return m_pointer;
+		}
+
+
+		T& GetRef() const
+		{
+			VSB_ASSERT(m_pointer != nullptr, "pointer shouldn't be null if addressed via GetRef()");
+			PTR_HANDLE_CHECK;
+
+			return *m_pointer;
+		}
+
+
+		void Reset()
+		{
+			m_pointer = nullptr;
+#ifdef VSB_PTR_VALIDATE
+			m_handle = internal::Handle();
+#endif
+		}
+
+
+	private:
+
+
+		template<typename U>
+		T* ExtractPointer(U* pPointer)
+		{
+			if constexpr (std::is_base_of_v<T, U>)
+			{
+				return static_cast<T*>(pPointer);
+			}
+			else
+			{
+				return dynamic_cast<T*>(pPointer);
+			}
+		}
+
+
+		T* m_pointer {nullptr};
+
+#ifdef VSB_PTR_VALIDATE
+		internal::Handle m_handle {};
+#endif
+
+	};
+
+	template<typename T>
+	Ptr<T> CreatePtr(T* pointer)
+	{
+		return Ptr<T>(pointer);
+	}
+
+	template<typename TPtrType, typename TInputPointerType>
+	Ptr<TPtrType> CreatePtr(TInputPointerType* pointer)
+	{
+		return Ptr<TPtrType>(pointer);
+	}
+}
+
+
+#ifdef VSB_PTR_VALIDATE
+#undef VSB_PTR_VALIDATE
+#endif
+
+#undef PTR_HANDLE_CHECK

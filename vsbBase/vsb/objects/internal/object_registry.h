@@ -11,6 +11,7 @@ namespace vsb
 {
 	class Object;
 	template<typename T> class Hnd;
+	template<typename T> class Ptr;
 }
 
 namespace vsb::internal
@@ -29,6 +30,7 @@ namespace vsb::internal
 		friend class ObjectRegistryFinalizer;
 		friend class vsb::Object;
 		template<typename T> friend class vsb::Hnd;
+		template<typename T> friend class vsb::Ptr;
 
 	public:
 

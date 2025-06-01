@@ -6,6 +6,7 @@
 #include "vsb/debug.h"
 #include "vsb/objects/hnd.h"
 #include "vsb/objects/object.h"
+#include "vsb/objects/ptr.h"
 #include "vsb/objects/internal/object_registry.h"
 
 
@@ -57,6 +58,13 @@ int main()
 
 		TestScopedObject t2(456);
 		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+
+		auto ptr1 = vsb::CreatePtr(&t2);
+
+		VSBLOG_INFO("ptr1 is valid: {}", ptr1.IsValid());
+
+		VSBLOG_INFO("ptr1 value: {}", ptr1->GetValue());
+
 
 		TestScopedObject t3(789);
 		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
