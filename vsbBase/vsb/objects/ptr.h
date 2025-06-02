@@ -109,7 +109,13 @@ namespace vsb
 
 		T* Get() const
 		{
-			PTR_HANDLE_CHECK;
+#ifdef DEBUG
+			if (m_pointer != nullptr)
+			{
+				PTR_HANDLE_CHECK;
+			}
+#endif
+
 			return m_pointer;
 		}
 
@@ -127,7 +133,7 @@ namespace vsb
 		{
 			m_pointer = nullptr;
 #ifdef VSB_PTR_VALIDATE
-			m_handle = internal::Handle();
+			m_handle = internal::Handle::Empty;
 #endif
 		}
 

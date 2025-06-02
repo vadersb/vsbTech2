@@ -7,6 +7,7 @@
 #include "vsb/objects/hnd.h"
 #include "vsb/objects/object.h"
 #include "vsb/objects/ptr.h"
+#include "vsb/objects/safe_ptr.h"
 #include "vsb/objects/internal/object_registry.h"
 
 
@@ -36,20 +37,17 @@ int main()
 {
 	vsb::internal::ObjectRegistryFinalizer objectRegistryFinalizer;
 
-
-	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+	VSBLOG_INFO("objects in registry: {}", (vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount()));
 
 	{
 		TestScopedObject t1(123);
-		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", (int)vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 		auto hnd1 = vsb::CreateHnd(&t1);
 
 		VSBLOG_INFO("hnd1 is valid: {}", hnd1.IsValid());
 
-		auto pT1 = hnd1.ValidateAndGet();
-
-		if (pT1 != nullptr)
+		if (auto pT1 = hnd1.ValidateAndGet(); pT1 != nullptr)
 		{
 			VSBLOG_INFO("pT1 value: {}", pT1->GetValue());
 		}
@@ -57,7 +55,7 @@ int main()
 		hnd1.Reset();
 
 		TestScopedObject t2(456);
-		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", (int)vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 		auto ptr1 = vsb::CreatePtr(&t2);
 
@@ -65,9 +63,22 @@ int main()
 
 		VSBLOG_INFO("ptr1 value: {}", ptr1->GetValue());
 
+		ptr1.Reset();
 
 		TestScopedObject t3(789);
 		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+
+		auto safePtr1 = vsb::CreateSafePtr(&t3);
+
+		if (safePtr1)
+		{
+			VSBLOG_INFO("safePtr1 is valid: {}", safePtr1.IsValid());
+			VSBLOG_INFO("safePtr1 value: {}", safePtr1->GetValue());
+		}
+
+		safePtr1.Reset();
+
+
 
 		VSBLOG_INFO("t1 value: {}", t1.GetValue());
 		VSBLOG_INFO("t2 value: {}", t2.GetValue());

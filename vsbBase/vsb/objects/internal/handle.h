@@ -8,6 +8,7 @@ namespace vsb
 	class Object;
 	template<typename T> class Hnd;
 	template<typename T> class Ptr;
+	template<typename T> class SafePtr;
 }
 
 namespace vsb::internal
@@ -21,8 +22,11 @@ namespace vsb::internal
 		friend class ObjectRegistry;
 		template<typename T> friend class vsb::Hnd;
 		template<typename T> friend class vsb::Ptr;
+		template<typename T> friend class vsb::SafePtr;
 
 	private:
+
+		static const Handle Empty;
 
 		Handle() = default;
 

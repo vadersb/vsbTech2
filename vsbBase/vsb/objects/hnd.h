@@ -50,11 +50,11 @@ namespace vsb
 				return false;
 			}
 
-			bool isValid = internal::ObjectRegistry::GetInstance().ValidateHandle(m_handle);
+			const bool isValid = internal::ObjectRegistry::GetInstance().ValidateHandle(m_handle);
 
 			if (!isValid)
 			{
-				m_handle = internal::Handle{};
+				m_handle = internal::Handle::Empty;
 			}
 
 			return isValid;
@@ -80,7 +80,7 @@ namespace vsb
 
 			if (pTargetPtr == nullptr)
 			{
-				m_handle = internal::Handle{};
+				m_handle = internal::Handle::Empty;
 			}
 
 			return pTargetPtr;
@@ -95,7 +95,7 @@ namespace vsb
 
 		void Reset()
 		{
-			m_handle = internal::Handle{};
+			m_handle = internal::Handle::Empty;
 		}
 
 
@@ -123,7 +123,7 @@ namespace vsb
 			auto pBasePtr = internal::ObjectRegistry::GetInstance().GetObject(handle);
 			auto pTargetPtr = dynamic_cast<T*>(pBasePtr);
 
-			return pTargetPtr == nullptr ? internal::Handle{} : handle;
+			return pTargetPtr == nullptr ? internal::Handle::Empty : handle;
 		}
 
 		template<typename U>
@@ -131,7 +131,7 @@ namespace vsb
 		{
 			if (pPointer == nullptr)
 			{
-				return internal::Handle{};
+				return internal::Handle::Empty;
 			}
 
 			T* pTargetPtr;
@@ -146,7 +146,7 @@ namespace vsb
 
 				if (pTargetPtr == nullptr)
 				{
-					return internal::Handle{};
+					return internal::Handle::Empty;
 				}
 			}
 
@@ -167,11 +167,11 @@ namespace vsb
 					return pBasePtr->GetHandle();
 				}
 
-				return internal::Handle{};
+				return internal::Handle::Empty;
 			}
 		}
 
-		internal::Handle m_handle{};
+		internal::Handle m_handle {};
 	};
 
 
