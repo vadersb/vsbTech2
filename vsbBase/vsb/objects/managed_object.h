@@ -4,10 +4,10 @@
 
 
 #include "object.h"
-#include "destruction_central.h"
 #include "vsb/debug.h"
 #include "vsb/log.h"
 #include "vsb/memory/allocation_strategy.h"
+#include "destruction_central.h"
 
 
 namespace vsb
@@ -15,6 +15,8 @@ namespace vsb
 
 	class ManagedObjectBase : public Object
 	{
+		friend class vsb::DestructionCentral;
+
 	public:
 
 		[[nodiscard]] bool IsScheduledForDestruction() const {return m_ScheduledForDestruction;}

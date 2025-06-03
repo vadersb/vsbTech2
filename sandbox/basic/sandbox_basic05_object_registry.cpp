@@ -6,6 +6,7 @@
 #include "vsb/debug.h"
 #include "vsb/objects/hnd.h"
 #include "vsb/objects/managed_object.h"
+#include "vsb/objects/destruction_central.h"
 #include "vsb/objects/object.h"
 #include "vsb/objects/ptr.h"
 #include "vsb/objects/safe_ptr.h"
@@ -34,8 +35,28 @@ namespace
 
 	class TestManagedObject : public vsb::ManagedObject<>
 	{
+	public:
+
+		explicit TestManagedObject(int value) : m_value(value)
+		{
+			VSBLOG_INFO("TestManagedObject created");
+		}
+
+
+		~TestManagedObject() override
+		{
+			VSBLOG_INFO("TestManagedObject destroyed");
+		}
+
+
+		[[nodiscard]] int GetValue() const {return m_value;}
+
+	private:
+
+		int m_value;
 
 	};
+
 }
 
 
@@ -100,6 +121,20 @@ int main()
 		VSBLOG_INFO("managed objects count: {}", stats.managedObjectsCount);
 
 	}
+
+
+	auto m1 = vsb::CreateSafePtr(new TestManagedObject(112233));
+
+	VSBLOG_INFO("m1 value: {}", m1->GetValue());
+
+	m1->Destroy();
+
+
+	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+
+
+	vsb::DestructionCentral::ProcessDefault();
+
 
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
