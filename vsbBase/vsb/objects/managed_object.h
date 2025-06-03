@@ -1,0 +1,79 @@
+//(C) 2025 Alexander Samarin
+
+#pragma once
+
+
+#include "object.h"
+#include "destruction_central.h"
+#include "vsb/debug.h"
+#include "vsb/log.h"
+#include "vsb/memory/allocation_strategy.h"
+
+
+namespace vsb
+{
+
+	class ManagedObjectBase : public Object
+	{
+	public:
+
+		[[nodiscard]] bool IsScheduledForDestruction() const {return m_ScheduledForDestruction;}
+
+	protected:
+
+		ManagedObjectBase() : Object(ObjectHint::Managed)
+		{}
+
+		~ManagedObjectBase() override = default;
+
+
+		void ScheduleForDestruction()
+		{
+			if (m_ScheduledForDestruction)
+			{
+				return;
+			}
+
+			m_ScheduledForDestruction = true;
+
+			OnScheduledForDestruction();
+			PassToDestructionCentral();
+		}
+
+		virtual void OnScheduledForDestruction() {}
+		virtual void PassToDestructionCentral() = 0;
+
+	private:
+
+		bool m_ScheduledForDestruction = false;
+	};
+
+
+	struct DefaultDestructionTag;
+
+
+	template<bool publicDestroy = true, typename TDestructionTag = DefaultDestructionTag, memory::AllocationStrategy allocationStrategy = memory::AllocationStrategy::DefaultNewOperator>
+	class ManagedObject : public ManagedObjectBase
+	{
+	public:
+
+		void Destroy() requires publicDestroy
+		{
+			ScheduleForDestruction();
+		}
+
+
+	protected:
+
+		ManagedObject() = default;
+		~ManagedObject() override = default;
+
+	private:
+
+		void PassToDestructionCentral() final
+		{
+			DestructionCentral::Schedule<TDestructionTag>(this);
+		}
+
+	};
+}

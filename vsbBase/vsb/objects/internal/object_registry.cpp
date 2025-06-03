@@ -15,10 +15,10 @@ namespace vsb::internal
 			return Handle{}; // Return an empty handle instead of asserting
 		}
 
-		const Index index = m_freeIndices.Pop();
+		const uint32_t index = m_freeIndices.Pop();
 		
 		// Additional bounds check for safety
-		VSB_ASSERT(index >= 0 && index < ObjectRegistryCapacity, "Invalid index from free indices stack");
+		VSB_ASSERT(index < ObjectRegistryCapacity, "Invalid index from free indices stack");
 
 		auto& entry = m_entries[index];
 
@@ -26,8 +26,9 @@ namespace vsb::internal
 		entry.pObject = pObject;
 		entry.hint = hint;
 
-		return Handle(entry.generation, static_cast<uint32_t>(index));
+		return Handle(entry.generation, index);
 	}
+
 
 	void ObjectRegistry::UnregisterObject(const Handle &handle)
 	{
@@ -70,6 +71,7 @@ namespace vsb::internal
 			VSBLOG_DEBUG("ObjectRegistry slot exhausted. index: {}, total exhausted slots: {}", index, m_exhaustedSlotsCount);
 		}
 	}
+
 
 	Object* ObjectRegistry::GetObject(const Handle &handle) const
 	{
@@ -134,9 +136,6 @@ namespace vsb::internal
 
 		VSB_ASSERT(m_freeIndices.IsFull(), "Free indices stack should be full after initialization");
 	}
-
-
-
 
 
 	Count ObjectRegistry::GetCurrentlyRegisteredObjectsCount()
