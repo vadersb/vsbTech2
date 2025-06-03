@@ -3,6 +3,8 @@
 #pragma once
 
 #include "managed_object.h"
+#include "vsb/containers/inplace_array.h"
+
 
 namespace vsb
 {
@@ -32,6 +34,8 @@ namespace vsb
 
 	private:
 
+		static constexpr Count DestructionListCapacity = 1024 * 16;
+
 		static void DestroyManagedObject(ManagedObjectBase* pObject);
 
 
@@ -42,8 +46,7 @@ namespace vsb
 
 			void Add(ManagedObjectBase* pObject)
 			{
-				m_pObjects.push_back(pObject);
-
+				m_Objects.Add(pObject);
 			}
 
 
@@ -59,7 +62,7 @@ namespace vsb
 
 		private:
 
-			std::vector<ManagedObjectBase*> m_pObjects;
+			InplaceArray<ManagedObjectBase*, DestructionListCapacity> m_Objects;
 		};
 
 

@@ -20,11 +20,11 @@ namespace vsb
 
 	void DestructionCentral::DestructionList::Process()
 	{
-		for (auto pObject: m_pObjects)
+		for (auto pObject: m_Objects)
 		{
 			DestroyManagedObject(pObject);
 		}
 
-		m_pObjects.clear();
+		m_Objects.Clear();
 	}
 }

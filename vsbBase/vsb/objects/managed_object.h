@@ -12,6 +12,7 @@
 
 namespace vsb
 {
+	class DestructionCentral;
 
 	class ManagedObjectBase : public Object
 	{
