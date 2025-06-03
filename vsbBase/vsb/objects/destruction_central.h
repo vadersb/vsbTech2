@@ -2,17 +2,24 @@
 
 #pragma once
 
-#include "managed_object.h"
 #include "vsb/containers/inplace_array.h"
 
 
 namespace vsb
 {
+	namespace memory
+	{
+		enum class AllocationStrategy : uint8_t;
+	}
+
 	class ManagedObjectBase;
 	struct DefaultDestructionTag;
 
 	template<bool publicDestroy, typename TDestructionTag, memory::AllocationStrategy allocationStrategy>
 	class ManagedObject;
+
+	constexpr Count DestructionListCapacity = 1024 * 16;
+
 
 	class DestructionCentral
 	{
@@ -34,15 +41,10 @@ namespace vsb
 
 	private:
 
-		static constexpr Count DestructionListCapacity = 1024 * 16;
-
-		static void DestroyManagedObject(ManagedObjectBase* pObject);
-
 
 		class DestructionList
 		{
 		public:
-
 
 			void Add(ManagedObjectBase* pObject)
 			{

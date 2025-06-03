@@ -5,9 +5,7 @@
 #include "vsb/log.h"
 #include "vsb/debug.h"
 #include "vsb/objects/hnd.h"
-#include "vsb/objects/destruction_central.h"
 #include "vsb/objects/managed_object.h"
-
 #include "vsb/objects/object.h"
 #include "vsb/objects/ptr.h"
 #include "vsb/objects/safe_ptr.h"

@@ -2,6 +2,7 @@
 
 
 #include "destruction_central.h"
+#include "managed_object.h"
 
 
 namespace vsb
@@ -12,17 +13,11 @@ namespace vsb
 	}
 
 
-	void DestructionCentral::DestroyManagedObject(ManagedObjectBase* pObject)
-	{
-		delete pObject;
-	}
-
-
 	void DestructionCentral::DestructionList::Process()
 	{
 		for (auto pObject: m_Objects)
 		{
-			DestroyManagedObject(pObject);
+			delete pObject;
 		}
 
 		m_Objects.Clear();
