@@ -37,7 +37,7 @@
 
 # CMake build dirs
 cmake-build-*/
-/third_party/libs/
+/third_party/libs/*/
 
 # Third party dirs
 /third_party/single_header/*/

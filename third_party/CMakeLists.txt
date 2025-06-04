@@ -1,2 +1,2 @@
-# spdlog
-add_subdirectory(libs/spdlog-1.15.3 "spdlog")
+
+add_subdirectory(libs)
