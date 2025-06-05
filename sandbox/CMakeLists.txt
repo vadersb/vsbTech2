@@ -21,3 +21,7 @@ target_link_libraries(sandbox_basic04_inplace_containers vsbBase)
 #05 - object registry
 add_executable(sandbox_basic05_object_registry basic/sandbox_basic05_object_registry.cpp)
 target_link_libraries(sandbox_basic05_object_registry vsbBase)
+
+#06 - object registry
+add_executable(sandbox_basic06_delegates basic/sandbox_basic06_delegates.cpp)
+target_link_libraries(sandbox_basic06_delegates vsbBase)

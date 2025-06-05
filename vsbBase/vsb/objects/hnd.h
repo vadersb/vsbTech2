@@ -3,12 +3,19 @@
 #pragma once
 #include "internal/handle.h"
 #include "internal/object_registry.h"
+#include "vsb/hash.h"
 
 namespace vsb
 {
 	template<typename T>
+	struct Hash64Provider<Hnd<T>>;
+
+	template<typename T>
 	class Hnd
 	{
+
+	friend struct Hash64Provider<Hnd>;
+
 	public:
 
 		Hnd()=default;
@@ -186,4 +193,15 @@ namespace vsb
 	{
 		return Hnd<THndType>(pointer);
 	}
+
+	template<typename T>
+	struct Hash64Provider<Hnd<T>>
+	{
+		constexpr static Hash64 Get(const Hnd<T>& key) noexcept
+		{
+			Hash64 result;
+			std::memcpy(&result, &key.m_handle, sizeof(Hash64));
+			return result;
+		}
+	};
 }
