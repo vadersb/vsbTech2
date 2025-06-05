@@ -333,9 +333,8 @@ namespace vsb
 			[[nodiscard]] Hash64 GetHash() const override
 			{
 				static_assert(sizeof(Hash64) == sizeof(TObject*));
-				static_assert(sizeof(Hash64) == sizeof(decltype(m_pMemberFunction)));
 				const auto h1 = std::bit_cast<Hash64>(m_pObject);
-				const auto h2 = std::bit_cast<Hash64>(m_pMemberFunction);
+				const auto h2 = GetMemberFunctionPointerHash(m_pMemberFunction);
 				return h1 ^ (h2 << 1);
 			}
 
@@ -389,9 +388,9 @@ namespace vsb
 
 			[[nodiscard]] Hash64 GetHash() const override
 			{
-				static_assert(sizeof(Hash64) == sizeof(decltype(m_pMemberFunction)));
+				//static_assert(sizeof(Hash64) == sizeof(decltype(m_pMemberFunction)));
 				const auto h1 = GetHash64(m_handle);
-				const auto h2 = std::bit_cast<Hash64>(m_pMemberFunction);
+				const auto h2 = GetMemberFunctionPointerHash(m_pMemberFunction);
 				return h1 ^ (h2 << 1);
 			}
 
@@ -414,6 +413,31 @@ namespace vsb
 		}
 
 
+		template<typename TMemberFunctionPointer>
+		static Hash64 GetMemberFunctionPointerHash(TMemberFunctionPointer pointer)
+		{
+            static_assert(std::is_member_function_pointer_v<TMemberFunctionPointer>);
+
+            if constexpr (sizeof(TMemberFunctionPointer) == sizeof(Hash64))
+            {
+                return std::bit_cast<Hash64>(pointer);
+            }
+            else if constexpr (sizeof(TMemberFunctionPointer) == sizeof(Hash64) * 2)
+            {
+                auto hashArray = std::bit_cast<std::array<Hash64, 2>>(pointer);
+                return hashArray[0] ^ (hashArray[1] << 1);
+            }
+            else if constexpr (sizeof(TMemberFunctionPointer) == sizeof(Hash64) * 3)
+            {
+                auto hashArray = std::bit_cast<std::array<Hash64, 3>>(pointer);
+                return hashArray[0] ^ (hashArray[1] << 1) ^ (hashArray[2] << 2);
+            }
+			else
+			{
+				auto byteArray = std::bit_cast<std::array<std::byte, sizeof(TMemberFunctionPointer)>>(pointer);
+				return CalculeteHash64(byteArray);
+			}
+		}
 
 
 		[[nodiscard]] bool IsDataEmpty() const
