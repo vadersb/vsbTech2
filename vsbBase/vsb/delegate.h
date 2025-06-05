@@ -196,22 +196,23 @@ namespace vsb
 				return true;
 			}
 
-			if (IsDataEmpty())
-			{
-				if (other.IsDataEmpty())
-				{
-					return true;
-				}
+			const bool isDataEmpty = IsDataEmpty();
 
-				return false;
-			}
-
-			if (other.IsDataEmpty())
+			if (isDataEmpty != other.IsDataEmpty())
 			{
 				return false;
 			}
 
-			return GetConstCallerBasePtr()->GetHash() == other.GetConstCallerBasePtr()->GetHash();
+			if (isDataEmpty)
+			{
+				return true; // Both empty
+			}
+
+			auto thisPtr = GetConstCallerBasePtr();
+			auto otherPtr = other.GetConstCallerBasePtr();
+			
+			// Compare type info first, then hash
+			return typeid(*thisPtr) == typeid(*otherPtr) && thisPtr->GetHash() == otherPtr->GetHash();
 		}
 
 		bool operator!=(const Delegate& other) const noexcept
@@ -230,8 +231,6 @@ namespace vsb
 		{
 			return !IsDataEmpty();
 		}
-
-
 
 
 
