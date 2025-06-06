@@ -38,14 +38,13 @@ void TestFunc1(int i, bool b)
 
 int main()
 {
+	VSBLOG_INFO("Delegate size: {} bytes", sizeof(TestDelegate));
+
 	TestDelegate d1;
 
 	TestDelegate d2(TestFunc1);
 
 	d2(5, true);
-
-	VSBLOG_INFO("Delegate size: {}", sizeof(TestDelegate));
-
 
 	SomeTestClass t1;
 	TestDelegate d3(CreateHnd(&t1), &SomeTestClass::TestFunc2);
@@ -59,8 +58,30 @@ int main()
 
 	VSBLOG_INFO("d3 and d4 are equal: {}", d3_and_d4_are_equal);
 
+	// Simple lambda
+	TestDelegate d5([](int i, bool b)
+		{VSBLOG_INFO("Lambda called with i: {} and b: {}", i, b);});
+
+	// Lambda with capture (as long as it fits in 32 bytes)
+	int capturedValue = 42;
+	TestDelegate d6([capturedValue](int i, bool b)
+		{VSBLOG_INFO("Lambda with capture: {} called with i: {} and b: {}", capturedValue, i, b);});
+
+	d5(10, true);
+	d6(20, false);
+
+	bool d5_and_d6_are_equal = d5 == d6;
+
+	VSBLOG_INFO("d5 and d6 are equal: {}", d5_and_d6_are_equal);
+
+
+	auto d7 = d5;
+
+	d7(30, true);
+
+	bool d5_and_d7_are_equal = d5 == d7;
+
+	VSBLOG_INFO("d5 and d7 are equal: {}", d5_and_d7_are_equal);
 
 	return 0;
 }
-
-

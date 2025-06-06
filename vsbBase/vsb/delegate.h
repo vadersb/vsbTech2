@@ -5,6 +5,8 @@
 #include <cstring>
 #include <memory>
 #include <new>
+#include <type_traits>
+#include <functional>
 #include "objects/hnd.h"
 #include "vsb/hash.h"
 
@@ -28,6 +30,23 @@ namespace vsb
 				auto rawPtr = GetDataRawPtr();
 				new (rawPtr) FreeStandingFunctionCaller(pFunctionPtr);
 			}
+		}
+
+
+		// Lambda/callable constructor
+		template<typename TCallable>
+		requires (!std::is_same_v<std::decay_t<TCallable>, Delegate> && 
+		          !std::is_same_v<std::decay_t<TCallable>, FunctionPtr> &&
+		          !std::is_pointer_v<std::decay_t<TCallable>> &&
+		          std::is_invocable_r_v<TReturnType, TCallable, TArgs...>)
+		explicit Delegate(TCallable&& callable)
+		{
+			using DecayedCallable = std::decay_t<TCallable>;
+			static_assert(sizeof(LambdaCaller<DecayedCallable>) <= sizeof(uint64_t) * 4, 
+			              "Lambda is too large - must fit in 32 bytes (sizeof(uint64_t) * 4)");
+			
+			auto rawPtr = GetDataRawPtr();
+			new (rawPtr) LambdaCaller<DecayedCallable>(std::forward<TCallable>(callable));
 		}
 
 
@@ -117,7 +136,23 @@ namespace vsb
 		}
 
 
-
+		// Assignment from lambda/callable
+		template<typename TCallable>
+		requires (!std::is_same_v<std::decay_t<TCallable>, Delegate> && 
+		          !std::is_same_v<std::decay_t<TCallable>, FunctionPtr> &&
+		          !std::is_pointer_v<std::decay_t<TCallable>> &&
+		          std::is_invocable_r_v<TReturnType, TCallable, TArgs...>)
+		Delegate& operator=(TCallable&& callable)
+		{
+			using DecayedCallable = std::decay_t<TCallable>;
+			static_assert(sizeof(LambdaCaller<DecayedCallable>) <= sizeof(uint64_t) * 4, 
+			              "Lambda is too large - must fit in 32 bytes (sizeof(uint64_t) * 4)");
+			
+			Reset();
+			auto rawPtr = GetDataRawPtr();
+			new (rawPtr) LambdaCaller<DecayedCallable>(std::forward<TCallable>(callable));
+			return *this;
+		}
 
 
 		~Delegate()
@@ -301,6 +336,48 @@ namespace vsb
 		};
 
 
+		template<typename TCallable>
+		class LambdaCaller final : public Caller
+		{
+		public:
+
+			template<typename TForwardedCallable>
+			explicit LambdaCaller(TForwardedCallable&& callable) 
+				: m_callable(std::forward<TForwardedCallable>(callable))
+			{}
+
+			[[nodiscard]] bool IsExpired() const override { return false; }
+			bool IsExpired() override { return false; }
+
+			TReturnType Call(TArgs... args) override
+			{
+				return m_callable(std::forward<TArgs>(args)...);
+			}
+
+			void CopyConstruct(void* pDest) const override
+			{
+				new (pDest) LambdaCaller(*this);
+			}
+
+			void MoveConstruct(void* pDest) override
+			{
+				new (pDest) LambdaCaller(std::move(*this));
+			}
+
+			[[nodiscard]] Hash64 GetHash() const override
+			{
+				// For lambdas, we'll use the type hash combined with memory content hash
+				// This provides a reasonable hash for comparison purposes
+				const auto typeHash = typeid(TCallable).hash_code();
+				const auto contentHash = CalculateHash64(m_callable);
+				return static_cast<Hash64>(typeHash) ^ (contentHash << 1);
+			}
+
+		private:
+			TCallable m_callable;
+		};
+
+
 		template<typename TObject>
 		class MemberFunctionCaller final : public Caller
 		{
@@ -435,7 +512,7 @@ namespace vsb
 			else
 			{
 				auto byteArray = std::bit_cast<std::array<std::byte, sizeof(TMemberFunctionPointer)>>(pointer);
-				return CalculeteHash64(byteArray);
+				return CalculateHash64(byteArray);
 			}
 		}
 
@@ -485,6 +562,9 @@ namespace vsb
             updateResult(sizeof(FreeStandingFunctionCaller));
             updateResult(sizeof(MemberFunctionCaller<SampleClass>));
             updateResult(sizeof(HandleFunctionCaller<SampleClass>));
+
+			// Ensure we have at least 32 bytes for lambdas
+			updateResult(sizeof(uint64_t) * 4);
 
             return result;
 		}
