@@ -28,13 +28,15 @@ namespace vsb
 
 
 		template<typename U>
-		explicit(std::is_base_of_v<T, U> == false) Hnd(const Hnd<U>& other) : m_handle(other.m_handle)
+		explicit(std::is_base_of_v<T, U> == false) Hnd(const Hnd<U>& other)
+		: m_handle(ExtractFromTypedHandle<U>(other.m_handle))
 		{}
 
 		template<typename U>
-		explicit(std::is_base_of_v<T, U> == false) Hnd(Hnd<U>&& moveFrom) : m_handle(std::move(moveFrom.m_handle))
-		{
-		}
+		explicit(std::is_base_of_v<T, U> == false) Hnd(Hnd<U>&& moveFrom) 
+		: m_handle(ExtractFromTypedHandle<U>(std::move(moveFrom.m_handle)))
+{
+}
 
 
 		explicit Hnd(const internal::Handle &handle) : m_handle(ExtractFromHandle(handle))
@@ -110,13 +112,40 @@ namespace vsb
 
 		T* GetValidatedPointer() const
 		{
-			if (m_handle.IsEmpty())
+			if (m_handle.IsEmpty()) return nullptr;
+    
+			auto pBasePtr = internal::ObjectRegistry::GetInstance().GetObject(m_handle);
+			auto* pCastedPtr = static_cast<T*>(pBasePtr);  // Fast! Type already validated
+
+#ifdef DEBUG  // or #ifndef NDEBUG
+		    if (pBasePtr != nullptr)
+		    {
+		        auto* pDynamicCastedPointer = dynamic_cast<T*>(pBasePtr);
+		        VSB_ASSERT(pDynamicCastedPointer == pCastedPtr, "static_cast and dynamic_cast results differ!");
+			}
+#endif
+
+			return pCastedPtr;
+		}
+
+
+		template<typename U>
+		static internal::Handle ExtractFromTypedHandle(internal::Handle handle)
+		{
+			if (handle.IsEmpty())
 			{
-				return nullptr;
+				return handle;
 			}
 
-			auto pBasePtr = internal::ObjectRegistry::GetInstance().GetObject(m_handle);
-			return dynamic_cast<T*>(pBasePtr);
+			if constexpr(std::same_as<T, U> || std::is_base_of_v<T, U>)
+			{
+				return handle;
+			}
+
+			auto pBasePtr = internal::ObjectRegistry::GetInstance().GetObject(handle);
+			auto pTargetPtr = dynamic_cast<T*>(pBasePtr);
+
+			return pTargetPtr == nullptr ? internal::Handle::Empty : handle;
 		}
 
 
