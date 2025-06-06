@@ -83,5 +83,15 @@ int main()
 
 	VSBLOG_INFO("d5 and d7 are equal: {}", d5_and_d7_are_equal);
 
+
+	uint64_t value2 = 69;
+	uint64_t value3 = 123;
+	uint64_t value4 = 456;
+
+	TestDelegate d8([capturedValue, value2, value3](int i, bool b)
+		{VSBLOG_INFO("Captured values: {}, {}, {}, Lambda called with i: {} and b: {}", capturedValue, value2, value3, i, b);});
+
+	d8(10, false);
+
 	return 0;
 }
