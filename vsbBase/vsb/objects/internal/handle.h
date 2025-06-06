@@ -2,6 +2,7 @@
 
 #pragma once
 #include <cstdint>
+#include "vsb/hash.h"
 
 namespace vsb
 {
@@ -23,6 +24,12 @@ namespace vsb::internal
 		template<typename T> friend class vsb::Hnd;
 		template<typename T> friend class vsb::Ptr;
 		template<typename T> friend class vsb::SafePtr;
+
+		[[nodiscard]] Hash64 GetHash64() const
+		{
+			const std::array hashValues = {m_generation, m_index};
+			return std::bit_cast<Hash64>(hashValues);
+		}
 
 	private:
 

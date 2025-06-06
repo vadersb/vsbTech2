@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstring>
 #include <string_view>
+#include <bit>
+#include <array>
 
 #include "constexpr-xxh3/constexpr-xxh3.h"
 
@@ -19,10 +21,7 @@ namespace vsb
 	template<typename T>
 	constexpr Hash64 CalculateHash64(const T &v) noexcept
 	{
-		static unsigned char buffer[sizeof(T)];
-
-		std::memcpy(buffer, &v, sizeof(T));
-
+		auto buffer = std::bit_cast<std::array<std::byte, sizeof(T)>>(v);
 		return constexpr_xxh3::XXH3_64bits_const(buffer);
 	}
 

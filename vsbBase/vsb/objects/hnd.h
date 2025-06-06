@@ -14,7 +14,7 @@ namespace vsb
 	class Hnd
 	{
 
-	friend struct Hash64Provider<Hnd>;
+	friend struct Hash64Provider<Hnd<T>>;
 
 	public:
 
@@ -199,9 +199,7 @@ namespace vsb
 	{
 		constexpr static Hash64 Get(const Hnd<T>& key) noexcept
 		{
-			Hash64 result;
-			std::memcpy(&result, &key.m_handle, sizeof(Hash64));
-			return result;
+			return key.m_handle.GetHash64();
 		}
 	};
 }
