@@ -33,6 +33,21 @@ namespace vsb::log
 	}
 
 
+	void InitForTests()
+	{
+		Uninit();
+
+		// Create stderr sink for tests to avoid interfering with Catch2's JSON output
+		const auto stderr_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+		stderr_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+		
+		std::vector<spdlog::sink_ptr> sinks = { stderr_sink };
+		
+		s_logger = std::make_shared<spdlog::logger>(LoggerName, sinks.begin(), sinks.end());
+		spdlog::set_default_logger(s_logger);
+	}
+
+
 	void SetLevel(Level level)
 	{
 		spdlog::set_level(static_cast<spdlog::level::level_enum>(level));
