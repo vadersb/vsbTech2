@@ -31,6 +31,11 @@ namespace vsb
 
 		static void ProcessDefault();
 
+		static void Uninit()
+		{
+			ProcessAll();
+		}
+
 
 		template<typename TDestructionTag>
 		static void Process()
@@ -41,30 +46,38 @@ namespace vsb
 
 	private:
 
+		static void ProcessAll();
+
 
 		class DestructionList
 		{
 		public:
 
-			void Add(ManagedObjectBase* pObject)
+			DestructionList()
 			{
-				m_Objects.Add(pObject);
+				s_DestructionLists.Add(this);
 			}
 
 
-			void Process();
+			void Add(ManagedObjectBase* pObject);
+			bool Process();
 
 
 			template<typename TDestructionTag>
 			static DestructionList& GetInstance()
 			{
+				static_assert(std::is_same_v<TDestructionTag, TDestructionTag>, "Template parameter used for specialization");
+
 				static DestructionList instance;
 				return instance;
 			}
 
 		private:
 
-			InplaceArray<ManagedObjectBase*, DestructionListCapacity> m_Objects;
+			bool m_IsProcessing = false;
+			bool m_TargetMainList = true;
+			InplaceArray<ManagedObjectBase*, DestructionListCapacity> m_ObjectsToDestroy {};
+			InplaceArray<ManagedObjectBase*, DestructionListCapacity> m_ObjectsToDestroyExtra {};
 		};
 
 
@@ -74,6 +87,11 @@ namespace vsb
 			auto& destructionList = DestructionList::GetInstance<TDestructionTag>();
 			destructionList.Add(pObject);
 		}
+
+		static constexpr Count DestructionListCount = 256;
+
+		static vsb::InplaceArray<DestructionList*, DestructionListCount> s_DestructionLists;
+
 
 	};
 }

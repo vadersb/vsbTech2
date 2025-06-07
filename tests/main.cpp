@@ -6,6 +6,7 @@
 #include "vsb/log.h"
 #include "vsb/memory/memory.h"
 #include "vsb/objects/internal/object_registry.h"
+#include "vsb/objects/destruction_central.h"
 
 // Optional: Global test setup/teardown
 struct GlobalTestSetup
@@ -23,6 +24,7 @@ struct GlobalTestSetup
 	~GlobalTestSetup()
 	{
 		VSBLOG_INFO("Global test setup uninit");
+		vsb::DestructionCentral::Uninit();
 		delete pObjectRegistryFinalizer;
 		vsb::memory::AllocationSystem::Uninit();
 		vsb::log::Uninit();

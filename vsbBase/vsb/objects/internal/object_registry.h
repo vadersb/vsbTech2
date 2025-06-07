@@ -17,7 +17,7 @@ namespace vsb
 
 namespace vsb::internal
 {
-	constexpr Count ObjectRegistryCapacity = 1024 * 32;
+	constexpr Count ObjectRegistryCapacity = 1024 * 64;
 
 	class ObjectRegistryFinalizer
 	{

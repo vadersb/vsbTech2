@@ -97,6 +97,18 @@ namespace vsb
 			m_count = 0;
 		}
 
+
+		//modifications
+		void Fill(const TValueType value = TValueType{}) noexcept
+		{
+			for (Index i = 0; i < m_count; ++i)
+			{
+				m_data[i] = value;
+			}
+		}
+
+
+
 	private:
 
 		void* GetRawPtr(const Index index) noexcept

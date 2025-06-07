@@ -74,12 +74,18 @@ int main()
 
 		VSBLOG_INFO("hnd1 is valid: {}", hnd1.IsValid());
 
-		if (auto pT1 = hnd1.ValidateAndGet(); pT1 != nullptr)
+		if (auto pT1 = hnd1.ValidateAndGet())
 		{
 			VSBLOG_INFO("pT1 value: {}", pT1->GetValue());
 		}
 
 		hnd1.Reset();
+
+		if (auto pT1 = hnd1.ValidateAndGet())
+		{
+			VSBLOG_INFO("pT1 value: {}", pT1->GetValue());
+		}
+
 
 		TestScopedObject t2(456);
 		VSBLOG_INFO("objects in registry: {}", (int)vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
@@ -140,6 +146,8 @@ int main()
 	//std::string str;
 
 	//std::cin >> str;
+
+	vsb::DestructionCentral::Uninit();
 
 	return 0;
 }
