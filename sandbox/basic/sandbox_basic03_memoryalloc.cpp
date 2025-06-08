@@ -5,7 +5,7 @@
 #include "vsb/memory/memory.h"
 
 
-void main()
+int main()
 {
 	vsb::memory::AllocationSystem::Init();
 

@@ -7,6 +7,7 @@
 #include "vsb/memory/memory.h"
 #include "vsb/objects/internal/object_registry.h"
 #include "vsb/objects/destruction_central.h"
+#include "vsb/objects/singleton.h"
 
 // Optional: Global test setup/teardown
 struct GlobalTestSetup
@@ -25,6 +26,7 @@ struct GlobalTestSetup
 	{
 		VSBLOG_INFO("Global test setup uninit");
 		vsb::DestructionCentral::Uninit();
+		vsb::SingletonBase::DestroyAllSingletons();
 		delete pObjectRegistryFinalizer;
 		vsb::memory::AllocationSystem::Uninit();
 		vsb::log::Uninit();

@@ -1,6 +1,4 @@
-add_library(vsbBase
-        vsb/objects/ptr.h
-        vsb/containers/inplace_array.h)
+add_library(vsbBase)
 
 # Add all source files
 file(GLOB_RECURSE SOURCES "vsb/*.cpp")

@@ -13,6 +13,7 @@ namespace vsb
 	{
 		Unspecified,
 		Static,
+		Singleton,
 		Scoped,
 		Managed
 	};
