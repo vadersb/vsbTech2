@@ -12,11 +12,17 @@ namespace vsb
 	{
 		auto& singletonList = GetSingletonList();
 
+		//todo later: sort by priority
+
 		for (auto& singletonEntry : singletonList)
 		{
 			if (auto* pSingleton = singletonEntry.pSingleton.ValidateAndGet())
 			{
 				delete pSingleton;
+			}
+			else
+			{
+				VSBLOG_WARN("Singleton is null");
 			}
 		}
 

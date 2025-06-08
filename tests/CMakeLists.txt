@@ -6,15 +6,24 @@ if(NOT Catch2_FOUND)
     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/libs/Catch2-3.8.1 catch2)
 endif()
 
+
+# Find all .cpp files in multiple directories and their subdirectories
+file(GLOB_RECURSE TEST_SOURCE_FILES
+        "base/*.cpp"
+        "objects/*.cpp"
+)
+
+
 # Create test executable
+
+
 add_executable(tests_vsbBase
         main.cpp
-        base/tests_hash.cpp
-        # unit/core/test_math.cpp
-        # unit/core/test_utils.cpp
-        # unit/graphics/test_renderer.cpp
-        # Add more test files here
+        ${TEST_SOURCE_FILES}
 )
+
+
+
 
 target_link_libraries(tests_vsbBase
         PRIVATE

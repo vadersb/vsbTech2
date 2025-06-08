@@ -10,6 +10,7 @@
 
 TEST_CASE("Hash64 - basic tests", "[base][hash]")
 {
+
 	SECTION("Empty hash")
 	{
 		VSBLOG_INFO("Empty hash test");
