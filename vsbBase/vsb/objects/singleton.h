@@ -15,6 +15,7 @@ namespace vsb
 
 		static void DestroyAllSingletons();
 
+
 	protected:
 
 		SingletonBase();
@@ -49,9 +50,16 @@ namespace vsb
 
 		static TSingleton& GetInstance()
 		{
-			static SafePtr<TSingleton> instance = new TSingleton();
-			return instance.GetRef();
+			return GetInstanceSafePtr().GetRef();
 		}
+
+
+		static TSingleton* GetInstancePtrIfAvailable()
+		{
+			auto safePtrCopy = GetInstanceSafePtr();
+			return safePtrCopy.ValidateAndGet();
+		}
+
 
 	protected:
 
@@ -61,5 +69,12 @@ namespace vsb
 		}
 
 
+	private:
+
+		static SafePtr<TSingleton>& GetInstanceSafePtr()
+		{
+			static SafePtr<TSingleton> instance = new TSingleton();
+			return instance;
+		}
 	};
 }
