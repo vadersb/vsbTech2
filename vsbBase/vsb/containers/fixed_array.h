@@ -50,6 +50,21 @@ namespace vsb
 		    std::copy(std::begin(arr), std::end(arr), begin());
 		}
 
+		// Seems like there is no need for this constructor
+		// template<typename... Args>
+		// requires (sizeof...(Args) <= Size) && (std::convertible_to<Args, TValueType> && ...)
+		// explicit FixedArray(Args&&... args) : m_data{static_cast<TValueType>(std::forward<Args>(args))...}
+		// {
+		//     // Initialize remaining elements to default if Size > sizeof...(Args)
+		//     if constexpr (sizeof...(Args) < Size)
+		//     {
+		//         for (Index i = sizeof...(Args); i < Size; ++i)
+		//         {
+		//             m_data[i] = TValueType{};
+		//         }
+		//     }
+		// }
+
 
 		//access
 		TValueType& operator[](const Index index) noexcept
@@ -112,4 +127,6 @@ namespace vsb
 		std::conditional_t<Size == 0, char, TValueType[Size]> m_data;
 	};
 
+	template<typename T, typename... U>
+	FixedArray(T, U...) -> FixedArray<T, 1 + sizeof...(U)>;
 }
