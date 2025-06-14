@@ -11,6 +11,7 @@ endif()
 file(GLOB_RECURSE TEST_SOURCE_FILES
         "base/*.cpp"
         "objects/*.cpp"
+        "containers/*.cpp"
 )
 
 

@@ -20,7 +20,7 @@ namespace vsb
 
 	public:
 
-		[[nodiscard]] bool IsScheduledForDestruction() const {return m_ScheduledForDestruction;}
+		[[nodiscard]] bool IsScheduledForDestruction() const {return m_scheduledForDestruction;}
 
 	protected:
 
@@ -32,12 +32,12 @@ namespace vsb
 
 		void ScheduleForDestruction()
 		{
-			if (m_ScheduledForDestruction)
+			if (m_scheduledForDestruction)
 			{
 				return;
 			}
 
-			m_ScheduledForDestruction = true;
+			m_scheduledForDestruction = true;
 
 			OnScheduledForDestruction();
 			PassToDestructionCentral();
@@ -48,7 +48,7 @@ namespace vsb
 
 	private:
 
-		bool m_ScheduledForDestruction = false;
+		bool m_scheduledForDestruction = false;
 	};
 
 

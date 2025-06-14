@@ -69,12 +69,12 @@ namespace vsb
 
 		// Iterators for compatibility with STL algorithms
 		[[nodiscard]] TValueType* begin() noexcept { return GetPtr(0); }
-		[[nodiscard]] const TValueType* begin() const noexcept { return GetConstPtr(0); }
-		[[nodiscard]] const TValueType* cbegin() const noexcept { return GetConstPtr(0); }
+		[[nodiscard]] const TValueType* begin() const noexcept { return GetPtr(0); }
+		[[nodiscard]] const TValueType* cbegin() const noexcept { return GetPtr(0); }
 
 		[[nodiscard]] TValueType* end() noexcept { return GetPtr(m_count); }
-		[[nodiscard]] const TValueType* end() const noexcept { return GetConstPtr(m_count); }
-		[[nodiscard]] const TValueType* cend() const noexcept { return GetConstPtr(m_count); }
+		[[nodiscard]] const TValueType* end() const noexcept { return GetPtr(m_count); }
+		[[nodiscard]] const TValueType* cend() const noexcept { return GetPtr(m_count); }
 
 
 
@@ -123,7 +123,7 @@ namespace vsb
 		}
 
 
-		const TValueType* GetConstPtr(const Index index) const noexcept
+		const TValueType* GetPtr(const Index index) const noexcept
 		{
 			return std::launder(reinterpret_cast<const TValueType*>(m_data + index * sizeof(TValueType)));
 		}

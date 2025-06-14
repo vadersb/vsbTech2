@@ -24,6 +24,19 @@ namespace vsb
 		}
 
 
+		template<std::convertible_to<TValueType> UValueType>
+		explicit Array(const Array<UValueType, allocationStrategy>& copyFrom) :
+		m_count(copyFrom.m_count),
+		m_capacity(copyFrom.m_capacity),
+		m_data(Allocate(m_capacity))
+		{
+			for (Index i = 0; i < m_count; ++i)
+			{
+				std::construct_at(GetPtr(i), copyFrom.m_data[i]);
+			}
+		}
+
+
 		~Array()
 		{
 			if (m_data != nullptr)
@@ -34,6 +47,22 @@ namespace vsb
 		}
 
 
+		//queries
+		[[nodiscard]] bool IsEmpty() const noexcept {return m_count == 0;}
+		[[nodiscard]] Count GetSize() const noexcept {return m_count;}
+		[[nodiscard]] constexpr Count GetCapacity() const noexcept { return m_capacity; }
+
+		// Iterators for compatibility with STL algorithms
+		[[nodiscard]] TValueType* begin() noexcept { return GetPtr(0); }
+		[[nodiscard]] const TValueType* begin() const noexcept { return GetPtr(0); }
+		[[nodiscard]] const TValueType* cbegin() const noexcept { return GetPtr(0); }
+
+		[[nodiscard]] TValueType* end() noexcept { return GetPtr(m_count); }
+		[[nodiscard]] const TValueType* end() const noexcept { return GetPtr(m_count); }
+		[[nodiscard]] const TValueType* cend() const noexcept { return GetPtr(m_count); }
+
+
+		//modifications
 		void Clear() noexcept
 		{
 			if constexpr (!std::is_trivially_destructible_v<TValueType>)
@@ -48,7 +77,6 @@ namespace vsb
 		}
 
 
-		//modifications
 		void Fill(const TValueType value = TValueType{}) noexcept
 		{
 			for (Index i = 0; i < m_count; ++i)
@@ -65,12 +93,18 @@ namespace vsb
 
 		static TValueType* Allocate(const Count size)
 		{
-			return memory::AllocationSystem::AllocateTyped<TValueType, allocationStrategy>(size);
+			if (size > 0)
+			{
+				return memory::AllocationSystem::AllocateTyped<TValueType, allocationStrategy>(size);
+			}
+
+			return nullptr;
 		}
 
 
 		void Deallocate()
 		{
+			VSB_ASSERT(m_capacity > 0, "shouldn't deallocate when m_capacity is 0");
 			memory::AllocationSystem::DeallocateTyped<TValueType, allocationStrategy>(m_data, m_capacity);
 			m_data = nullptr;
 			m_count = 0;
