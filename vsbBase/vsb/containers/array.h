@@ -14,6 +14,8 @@ namespace vsb
 	{
 	public:
 
+		constexpr static Count MinStartCapacity = 8;
+
 		template<typename U, memory::AllocationStrategy S>
 		friend class Array;
 
@@ -41,6 +43,17 @@ namespace vsb
 		}
 
 
+		Array(Array&& moveFrom) noexcept :
+		m_count(moveFrom.m_count),
+		m_capacity(moveFrom.m_capacity),
+		m_data(moveFrom.m_data)
+		{
+			moveFrom.m_count = 0;
+			moveFrom.m_capacity = 0;
+			moveFrom.m_data = nullptr;
+		}
+
+
 		~Array()
 		{
 			if (m_data != nullptr)
@@ -53,6 +66,7 @@ namespace vsb
 
 		//queries
 		[[nodiscard]] bool IsEmpty() const noexcept {return m_count == 0;}
+		[[nodiscard]] bool IsFull() const noexcept { return m_count == m_capacity; }
 		[[nodiscard]] Count GetSize() const noexcept {return m_count;}
 		[[nodiscard]] constexpr Count GetCapacity() const noexcept { return m_capacity; }
 
@@ -64,6 +78,74 @@ namespace vsb
 		[[nodiscard]] TValueType* end() noexcept { return GetPtr(m_count); }
 		[[nodiscard]] const TValueType* end() const noexcept { return GetPtr(m_count); }
 		[[nodiscard]] const TValueType* cend() const noexcept { return GetPtr(m_count); }
+
+
+		//access
+		TValueType& operator[](const Index index) noexcept
+		{
+			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
+			return m_data[index];
+		}
+
+
+		const TValueType& operator[](const Index index) const noexcept
+		{
+			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
+			return m_data[index];
+		}
+
+
+		TValueType GetValueOrDefault(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
+		{
+			if (index < m_count && index >= 0)
+			{
+				return m_data[index];
+			}
+
+			return defaultValue;
+		}
+
+
+
+		//adding an element to back
+		void Add(const TValueType& value) noexcept(std::is_nothrow_copy_constructible_v<TValueType>)
+		{
+			if (m_count == m_capacity)
+			{
+				ExpandRegular(m_capacity + 1);
+			}
+
+			auto ptr = GetPtr(m_count);
+			new (ptr) TValueType(value);
+			m_count++;
+		}
+
+
+		void Add(TValueType&& value) noexcept(std::is_nothrow_move_constructible_v<TValueType>)
+		{
+			if (m_count == m_capacity)
+			{
+				ExpandRegular(m_capacity + 1);
+			}
+
+			auto ptr = GetPtr(m_count);
+			new (ptr) TValueType(std::move(value));
+			m_count++;
+		}
+
+
+		template<typename... Args>
+		TValueType& Emplace(Args&&... args)
+		{
+			if (m_count == m_capacity)
+			{
+				ExpandRegular(m_capacity + 1);
+			}
+
+			auto ptr = GetPtr(m_count);
+			new (ptr) TValueType(std::forward<Args>(args)...);
+			return *GetPtr(m_count++);
+		}
 
 
 		//modifications
@@ -94,7 +176,6 @@ namespace vsb
 
 
 
-
 		static TValueType* Allocate(const Count size)
 		{
 			if (size > 0)
@@ -114,6 +195,55 @@ namespace vsb
 			m_count = 0;
 			m_capacity = 0;
 		}
+
+
+		void ExpandRegular(const Count minNewCapacity)
+		{
+			const auto newCapacity = CalculateExpandedCapacity(m_capacity, minNewCapacity);
+			Expand(newCapacity);
+		}
+
+
+		void Expand(const Count newCapacity)
+		{
+			VSB_ASSERT(m_capacity < newCapacity, "");
+			auto newData = Allocate(newCapacity);
+			const auto newCount = m_count;
+
+			for (Index i = 0; i < m_count; ++i)
+			{
+				std::construct_at(newData + i, std::move(*GetPtr(i)));
+				std::destroy_at(GetPtr(i));
+			}
+
+			if (m_capacity > 0)
+			{
+				Deallocate();
+			}
+
+			m_count = newCount;
+			m_capacity = newCapacity;
+			m_data = newData;
+		}
+
+
+		static Count CalculateExpandedCapacity(Count currentCapacity, Count minNewCapacity)
+		{
+			if (minNewCapacity <= MinStartCapacity)
+			{
+				return MinStartCapacity;
+			}
+
+			Count newCapacity = currentCapacity;
+
+			while (newCapacity < minNewCapacity)
+			{
+				newCapacity *= 2;
+			}
+
+			return newCapacity;
+		}
+
 
 
 		TValueType* GetPtr(const Index index) noexcept

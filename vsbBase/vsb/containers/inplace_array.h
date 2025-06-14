@@ -19,7 +19,7 @@ namespace vsb
 		//adding an element to back
 		void Add(const TValueType& value) noexcept(std::is_nothrow_copy_constructible_v<TValueType>)
 		{
-			if (m_count >= Capacity)
+			if (m_count == Capacity)
 			{
 				VSBLOG_CRITICAL("InplaceArray::Add overflow");
 				return;
@@ -33,7 +33,7 @@ namespace vsb
 
 		void Add(TValueType&& value) noexcept(std::is_nothrow_move_constructible_v<TValueType>)
 		{
-			if (m_count >= Capacity)
+			if (m_count == Capacity)
 			{
 				VSBLOG_CRITICAL("InplaceArray::Add overflow");
 				return;
@@ -45,18 +45,61 @@ namespace vsb
 		}
 
 
-		template<typename... Args>
-		void Emplace(Args&&... args)
+		bool TryAdd(const TValueType& copyFrom) noexcept(std::is_nothrow_copy_constructible_v<TValueType>)
 		{
-			if (m_count >= Capacity)
+			if (m_count == Capacity)
+			{
+				return false;
+			}
+
+			auto ptr = GetRawPtr(m_count);
+			new (ptr) TValueType(copyFrom);
+			m_count++;
+			return true;
+		}
+
+
+		bool TryAdd(TValueType&& moveFrom)  noexcept(std::is_nothrow_move_constructible_v<TValueType>)
+		{
+			if (m_count == Capacity)
+			{
+				return false;
+			}
+
+			auto ptr = GetRawPtr(m_count);
+			new (ptr) TValueType(std::move(moveFrom));
+			m_count++;
+			return true;
+		}
+
+
+		template<typename... Args>
+		TValueType& Emplace(Args&&... args)
+		{
+			if (m_count == Capacity)
 			{
 				VSBLOG_CRITICAL("InplaceArray::Add overflow");
-				return;
+				return {};
 			}
 
 			auto ptr = GetRawPtr(m_count);
 			new (ptr) TValueType(std::forward<Args>(args)...);
 			return *GetPtr(m_count++);
+		}
+
+
+		template<typename... Args>
+		bool TryEmplace(Args&&... args)
+		{
+			if (m_count == Capacity)
+			{
+				return false;
+			}
+
+			auto ptr = GetRawPtr(m_count);
+			new (ptr) TValueType(std::forward<Args>(args)...);
+			m_count++;
+			return true;
 		}
 
 

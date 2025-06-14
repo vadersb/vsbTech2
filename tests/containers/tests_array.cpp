@@ -8,7 +8,7 @@
 #include "vsb/log.h"
 #include "vsb/containers/array.h"
 
-TEST_CASE("Containers - Arrray", "[containers][array]")
+TEST_CASE("Containers - Array", "[containers][array]")
 {
 
 	SECTION("Empty Array")
@@ -47,6 +47,43 @@ TEST_CASE("Containers - Arrray", "[containers][array]")
 			REQUIRE(longIntsArray.GetSize() == 0);
 			REQUIRE(longIntsArray.GetCapacity() == intsArray.GetCapacity());
 		}
+	}
+
+
+	SECTION("Adding elements")
+	{
+		vsb::Array<int> intsArray(vsb::CapacitySetting(32));
+		REQUIRE(intsArray.GetSize() == 0);
+
+		intsArray.Add(123);
+		REQUIRE(intsArray.GetSize() == 1);
+
+		intsArray.Add(456);
+		REQUIRE(intsArray.GetSize() == 2);
+	}
+
+
+	SECTION("Regular Capacity Growth")
+	{
+		vsb::Array<int> intsArray;
+
+		constexpr auto MinStartCapacity = decltype(intsArray)::MinStartCapacity;
+
+		REQUIRE(intsArray.GetSize() == 0);
+		REQUIRE(intsArray.GetCapacity() == 0);
+
+		intsArray.Add(123);
+
+		REQUIRE(intsArray.GetSize() == 1);
+		REQUIRE(intsArray.GetCapacity() == MinStartCapacity);
+
+		for (int i = 0; i < MinStartCapacity; i++)
+		{
+			intsArray.Add(i);
+		}
+
+		REQUIRE(intsArray.GetSize() == 9);
+		REQUIRE(intsArray.GetCapacity() == MinStartCapacity * 2);
 	}
 
 
