@@ -37,4 +37,17 @@ TEST_CASE("Containers - Arrray", "[containers][array]")
 	}
 
 
+	SECTION("Copy Constructors")
+	{
+		{
+			vsb::Array<int> intsArray(vsb::CapacitySetting(32));
+
+			vsb::Array<uint64_t, vsb::memory::AllocationStrategy::StdChecked> longIntsArray(intsArray);
+
+			REQUIRE(longIntsArray.GetSize() == 0);
+			REQUIRE(longIntsArray.GetCapacity() == intsArray.GetCapacity());
+		}
+	}
+
+
 }

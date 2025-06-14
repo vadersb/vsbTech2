@@ -13,7 +13,7 @@ TEST_CASE("Hash64 - basic tests", "[base][hash]")
 
 	SECTION("Empty hash")
 	{
-		VSBLOG_INFO("Empty hash test");
+		//VSBLOG_INFO("Empty hash test");
 		const vsb::Hash64 emptyHash{};
 		REQUIRE( emptyHash == vsb::NullHash64 );
 

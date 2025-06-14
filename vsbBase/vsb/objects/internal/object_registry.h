@@ -40,6 +40,7 @@ namespace vsb::internal
 		{
 			Count unspecifiedObjectsCount = 0;
 			Count staticObjectsCount = 0;
+			Count singletonObjectsCount = 0;
 			Count scopedObjectsCount = 0;
 			Count managedObjectsCount = 0;
 		};

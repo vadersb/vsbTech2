@@ -174,6 +174,10 @@ namespace vsb::internal
 						stats.staticObjectsCount++;
 						break;
 
+					case ObjectHint::Singleton:
+						stats.singletonObjectsCount++;
+						break;
+
 					case ObjectHint::Scoped:
 						stats.scopedObjectsCount++;
 						break;

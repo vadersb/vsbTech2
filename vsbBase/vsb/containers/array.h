@@ -14,6 +14,10 @@ namespace vsb
 	{
 	public:
 
+		template<typename U, memory::AllocationStrategy S>
+		friend class Array;
+
+
 		Array() = default;
 
 
@@ -24,15 +28,15 @@ namespace vsb
 		}
 
 
-		template<std::convertible_to<TValueType> UValueType>
-		explicit Array(const Array<UValueType, allocationStrategy>& copyFrom) :
+		template<std::convertible_to<TValueType> UValueType, memory::AllocationStrategy otherAllocationStrategy>
+		explicit Array(const Array<UValueType, otherAllocationStrategy>& copyFrom) :
 		m_count(copyFrom.m_count),
 		m_capacity(copyFrom.m_capacity),
 		m_data(Allocate(m_capacity))
 		{
 			for (Index i = 0; i < m_count; ++i)
 			{
-				std::construct_at(GetPtr(i), copyFrom.m_data[i]);
+				std::construct_at(GetPtr(i), *copyFrom.GetPtr(i));
 			}
 		}
 
