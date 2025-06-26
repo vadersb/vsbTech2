@@ -16,6 +16,11 @@ void TestFunc1(int i, bool b)
 	VSBLOG_INFO("TestFunc1 called with i: {} and b: {}", i, b);
 }
 
+void TestLambdaFunc(int i, bool b)
+{
+	VSBLOG_INFO("TestLambdaFunc called with i: {} and b: {}", i, b);
+}
+
 
 	class SomeTestClass : public vsb::Object
 	{
@@ -73,6 +78,12 @@ int main()
 	bool d5_and_d6_are_equal = d5 == d6;
 
 	VSBLOG_INFO("d5 and d6 are equal: {}", d5_and_d6_are_equal);
+
+	{
+		TestDelegate autoLambdaDelegate([](auto i, auto b) {TestLambdaFunc(i, b);});
+		autoLambdaDelegate(15, true);
+	}
+
 
 
 	auto d7 = d5;

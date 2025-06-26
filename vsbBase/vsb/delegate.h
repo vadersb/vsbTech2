@@ -6,12 +6,25 @@
 #include <memory>
 #include <new>
 #include <type_traits>
-#include <functional>
+#include <concepts>
 #include "objects/hnd.h"
 #include "vsb/hash.h"
 
 namespace vsb
 {
+	namespace internal
+	{
+		// Helper concept to check if a callable can be invoked with given arguments
+		// This is more flexible than std::is_invocable_r_v for generic lambdas
+		template<typename TCallable, typename TReturnType, typename... TArgs>
+		concept InvocableWithResult = requires(TCallable&& callable, TArgs&&... args) {
+			{ std::forward<TCallable>(callable)(std::forward<TArgs>(args)...) } -> std::convertible_to<TReturnType>;
+		} || (std::is_void_v<TReturnType> && requires(TCallable&& callable, TArgs&&... args) {
+			std::forward<TCallable>(callable)(std::forward<TArgs>(args)...);
+		});
+	}
+
+
 	template<typename TReturnType, typename... TArgs>
 	class Delegate
 	{
@@ -33,12 +46,12 @@ namespace vsb
 		}
 
 
-		// Lambda/callable constructor
+		// Lambda/callable constructor - now supports generic lambdas with auto parameters
 		template<typename TCallable>
 		requires (!std::is_same_v<std::decay_t<TCallable>, Delegate> && 
 		          !std::is_same_v<std::decay_t<TCallable>, FunctionPtr> &&
 		          !std::is_pointer_v<std::decay_t<TCallable>> &&
-		          std::is_invocable_r_v<TReturnType, TCallable, TArgs...>)
+				   internal::InvocableWithResult<TCallable, TReturnType, TArgs...>)
 		explicit Delegate(TCallable&& callable)
 		{
 			using DecayedCallable = std::decay_t<TCallable>;
@@ -136,12 +149,12 @@ namespace vsb
 		}
 
 
-		// Assignment from lambda/callable
+		// Assignment from lambda/callable - now supports generic lambdas
 		template<typename TCallable>
 		requires (!std::is_same_v<std::decay_t<TCallable>, Delegate> && 
 		          !std::is_same_v<std::decay_t<TCallable>, FunctionPtr> &&
 		          !std::is_pointer_v<std::decay_t<TCallable>> &&
-		          std::is_invocable_r_v<TReturnType, TCallable, TArgs...>)
+	               internal::InvocableWithResult<TCallable, TReturnType, TArgs...>)
 		Delegate& operator=(TCallable&& callable)
 		{
 			using DecayedCallable = std::decay_t<TCallable>;
@@ -342,6 +355,7 @@ namespace vsb
 		public:
 
 			template<typename TForwardedCallable>
+			requires (!std::is_same_v<std::decay_t<TForwardedCallable>, LambdaCaller>)
 			explicit LambdaCaller(TForwardedCallable&& callable) 
 				: m_callable(std::forward<TForwardedCallable>(callable))
 			{}
@@ -351,7 +365,16 @@ namespace vsb
 
 			TReturnType Call(TArgs... args) override
 			{
-				return m_callable(std::forward<TArgs>(args)...);
+				// The magic happens here - auto parameters get deduced at call time
+				if constexpr (std::is_void_v<TReturnType>)
+				{
+					m_callable(std::forward<TArgs>(args)...);
+					return;
+				}
+				else
+				{
+					return m_callable(std::forward<TArgs>(args)...);
+				}
 			}
 
 			void CopyConstruct(void* pDest) const override
@@ -509,11 +532,11 @@ namespace vsb
                 auto hashArray = std::bit_cast<std::array<Hash64, 3>>(pointer);
                 return hashArray[0] ^ (hashArray[1] << 1) ^ (hashArray[2] << 2);
             }
-			else
-			{
-				auto byteArray = std::bit_cast<std::array<std::byte, sizeof(TMemberFunctionPointer)>>(pointer);
-				return CalculateHash64(byteArray);
-			}
+            else
+            {
+                auto byteArray = std::bit_cast<std::array<std::byte, sizeof(TMemberFunctionPointer)>>(pointer);
+                return CalculateHash64(byteArray);
+            }
 		}
 
 

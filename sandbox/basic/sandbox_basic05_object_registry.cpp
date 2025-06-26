@@ -18,7 +18,7 @@ namespace
 	{
 	public:
 
-		explicit TestScopedObject(const int value) : vsb::Object(vsb::ObjectHint::Scoped), m_value(value)
+		explicit TestScopedObject(const int value) : Object(vsb::ObjectHint::Scoped), m_value(value)
 		{}
 
 		[[nodiscard]] int GetValue() const {return m_value;}
