@@ -82,6 +82,9 @@ int main()
 	{
 		TestDelegate autoLambdaDelegate([](auto i, auto b) {TestLambdaFunc(i, b);});
 		autoLambdaDelegate(15, true);
+
+		TestDelegate autoLambdaDelegate2([](auto i, auto b) {VSBLOG_INFO("autoLambdaDelegate2 is called with {} and {}", i, b);});
+		autoLambdaDelegate2(25, false);
 	}
 
 
