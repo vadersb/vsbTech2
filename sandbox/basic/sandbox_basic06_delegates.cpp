@@ -31,9 +31,12 @@ void TestLambdaFunc(int i, bool b)
 
 		void TestFunc2(int i, bool b)
 		{
-			VSBLOG_INFO("TestFunc2 called with i: {} and b: {}", i, b);
+			VSBLOG_INFO("TestFunc2 called with i: {} and b: {}", i + m_Value, b);
 		}
 
+	private:
+
+		int m_Value {123};
 
 	};
 
