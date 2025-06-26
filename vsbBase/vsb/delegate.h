@@ -136,7 +136,7 @@ namespace vsb
 		}
 
 
-		// Assignment from function pointer
+		// Assignment from a function pointer
 		Delegate& operator=(FunctionPtr pFunctionPtr)
 		{
 			Reset();

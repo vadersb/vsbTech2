@@ -4,8 +4,6 @@
 
 
 #include "object.h"
-#include "vsb/debug.h"
-#include "vsb/log.h"
 #include "vsb/memory/allocation_strategy.h"
 #include "destruction_central.h"
 
