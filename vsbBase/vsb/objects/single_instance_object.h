@@ -47,6 +47,6 @@ namespace vsb
 
 	private:
 
-		static TObject* s_CurrentInstance {nullptr};
+		static inline TObject* s_CurrentInstance {nullptr};
 	};
 }
