@@ -71,11 +71,11 @@ int main()
 {
 	vsb::internal::ObjectRegistryFinalizer objectRegistryFinalizer;
 
-	VSBLOG_INFO("objects in registry: {}", (vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount()));
+	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 	{
 		TestScopedObject t1(123);
-		VSBLOG_INFO("objects in registry: {}", (int)vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 		auto hnd1 = vsb::CreateHnd(&t1);
 
@@ -95,7 +95,7 @@ int main()
 
 
 		TestScopedObject t2(456);
-		VSBLOG_INFO("objects in registry: {}", (int)vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 		auto ptr1 = vsb::CreatePtr(&t2);
 

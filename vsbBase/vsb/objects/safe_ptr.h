@@ -199,11 +199,11 @@ namespace vsb
 
 			if constexpr (std::is_base_of_v<Object, T>)
 			{
-				auto pBasePtr = static_cast<Object*>(pointer);
+				const auto pBasePtr = static_cast<Object*>(pointer);
 				return pBasePtr->GetHandle();
 			}
 
-			auto pBasePtr = dynamic_cast<Object*>(pointer);
+			const auto pBasePtr = dynamic_cast<Object*>(pointer);
 			return pBasePtr == nullptr ? internal::Handle::Empty : pBasePtr->GetHandle();
 		}
 
