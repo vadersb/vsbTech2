@@ -42,6 +42,12 @@ namespace
 		}
 
 
+		static vsb::SafePtr<TestManagedObject> Create(const int value)
+		{
+			return new TestManagedObject(value);
+		}
+
+
 		~TestManagedObject() override
 		{
 			VSBLOG_INFO("TestManagedObject destroyed");
@@ -49,6 +55,7 @@ namespace
 
 
 		[[nodiscard]] int GetValue() const {return m_value;}
+		void SetValue(const int value) {m_value = value;}
 
 	private:
 
@@ -128,11 +135,37 @@ int main()
 	}
 
 
-	auto m1 = vsb::CreateSafePtr(new TestManagedObject(112233));
+	const auto m1 = vsb::CreateSafePtr(new TestManagedObject(112233));
+
+	VSBLOG_INFO("m1 value: {}", m1->GetValue());
+
+	m1->SetValue(332211);
 
 	VSBLOG_INFO("m1 value: {}", m1->GetValue());
 
 	m1->Destroy();
+
+
+	auto m2 = TestManagedObject::Create(445566);
+
+	VSBLOG_INFO("m2 value: {}", m2->GetValue());
+
+	m2->SetValue(665544);
+
+	VSBLOG_INFO("m2 value: {}", m2->GetValue());
+
+	m2->Destroy();
+
+	m2.Reset();
+
+
+	// const vsb::SafePtr<const TestManagedObject> m3 = TestManagedObject::Create(778899);
+	//
+	// VSBLOG_INFO("m3 value: {}", m3->GetValue());
+	//
+	// vsb::SafePtr<TestManagedObject> m3copy = m3;
+	//
+	// m3copy->Destroy();
 
 
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
