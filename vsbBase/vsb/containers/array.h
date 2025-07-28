@@ -95,7 +95,7 @@ namespace vsb
 		}
 
 
-		TValueType GetValueOrDefault(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
+		TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
 		{
 			if (index < m_count && index >= 0)
 			{
@@ -103,6 +103,15 @@ namespace vsb
 			}
 
 			return defaultValue;
+		}
+
+
+		void Set(const Index index, const TValueType value) noexcept
+		{
+			if (index < m_count && index >= 0)
+			{
+				m_data[index] = value;
+			}
 		}
 
 

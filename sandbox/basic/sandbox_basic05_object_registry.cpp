@@ -50,7 +50,7 @@ namespace
 
 		~TestManagedObject() override
 		{
-			VSBLOG_INFO("TestManagedObject destroyed");
+			VSBLOG_INFO("TestManagedObject destroyed. value: {}", m_value);
 		}
 
 

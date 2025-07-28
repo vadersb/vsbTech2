@@ -103,6 +103,41 @@ namespace vsb
 		}
 
 
+		//access
+		TValueType& operator[](const Index index) noexcept
+		{
+			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
+			return m_data[index];
+		}
+
+
+		const TValueType& operator[](const Index index) const noexcept
+		{
+			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
+			return m_data[index];
+		}
+
+
+		TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
+		{
+			if (index < m_count && index >= 0)
+			{
+				return m_data[index];
+			}
+
+			return defaultValue;
+		}
+
+
+		void Set(const Index index, const TValueType value) noexcept
+		{
+			if (index < m_count && index >= 0)
+			{
+				m_data[index] = value;
+			}
+		}
+
+
 		//queries
 		[[nodiscard]] bool IsEmpty() const noexcept {return m_count == 0;}
 		[[nodiscard]] bool IsFull() const noexcept { return m_count == Capacity; }
