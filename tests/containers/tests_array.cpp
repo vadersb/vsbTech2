@@ -90,15 +90,35 @@ TEST_CASE("Containers - Array", "[containers][array]")
 	SECTION("Access")
 	{
 		vsb::Array<int> intsArray;
+		int expectedSum = 0;
 
 		for (int i = 0; i < 16; i++)
 		{
 			intsArray.Add(i);
+			expectedSum += i;
 		}
 
 
 		REQUIRE(intsArray[0] == 0);
 		REQUIRE(intsArray[vsb::FromEnd(1)] == 15);
+
+		int resultingSum = 0;
+
+		for (int item : intsArray)
+		{
+			resultingSum += item;
+		}
+
+		REQUIRE(resultingSum == expectedSum);
+
+		//modifying the array
+		for (int& item : intsArray)
+		{
+			item += 10;
+		}
+
+		REQUIRE(intsArray[0] == 10);
+		REQUIRE(intsArray[vsb::FromEnd(1)] == 25);
 	}
 
 }
