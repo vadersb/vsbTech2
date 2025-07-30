@@ -11,8 +11,18 @@ namespace vsb
 
 	constexpr Index InvalidIndex = -1;
 
+
 	struct CapacitySetting
 	{
 		Count Capacity;
+	};
+
+
+	struct FromEnd
+	{
+		Index offset;
+
+		explicit FromEnd(Index theOffset, bool strict = false);
+		[[nodiscard]] Index GetIndex(Count size) const noexcept;
 	};
 }

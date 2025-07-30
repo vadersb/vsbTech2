@@ -74,8 +74,24 @@ namespace vsb
 		}
 
 
+		TValueType& operator[](const FromEnd offsetFromEnd) noexcept
+		{
+			auto index = offsetFromEnd.GetIndex(Size);
+			VSB_ASSERT_V(index < Size && index >= 0, "Index out of bounds", index);
+			return m_data[index];
+		}
+
+
 		const TValueType& operator[](const Index index) const noexcept
 		{
+			VSB_ASSERT_V(index < Size && index >= 0, "Index out of bounds", index);
+			return m_data[index];
+		}
+
+
+		const TValueType& operator[](const FromEnd offsetFromEnd) const noexcept
+		{
+			auto index = offsetFromEnd.GetIndex(Size);
 			VSB_ASSERT_V(index < Size && index >= 0, "Index out of bounds", index);
 			return m_data[index];
 		}
@@ -92,8 +108,30 @@ namespace vsb
 		}
 
 
+		TValueType Get(const FromEnd offsetFromEnd, const TValueType defaultValue = TValueType{}) const noexcept
+		{
+			auto index = offsetFromEnd.GetIndex(Size);
+			if (index < Size && index >= 0)
+			{
+				return m_data[index];
+			}
+
+			return defaultValue;
+		}
+
+
 		void Set(const Index index, const TValueType value) noexcept
 		{
+			if (index < Size && index >= 0)
+			{
+				m_data[index] = value;
+			}
+		}
+
+
+		void Set(const FromEnd offsetFromEnd, const TValueType value) noexcept
+		{
+			auto index = offsetFromEnd.GetIndex(Size);
 			if (index < Size && index >= 0)
 			{
 				m_data[index] = value;

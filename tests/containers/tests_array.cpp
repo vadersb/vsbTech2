@@ -87,4 +87,18 @@ TEST_CASE("Containers - Array", "[containers][array]")
 	}
 
 
+	SECTION("Access")
+	{
+		vsb::Array<int> intsArray;
+
+		for (int i = 0; i < 16; i++)
+		{
+			intsArray.Add(i);
+		}
+
+
+		REQUIRE(intsArray[0] == 0);
+		REQUIRE(intsArray[vsb::FromEnd(1)] == 15);
+	}
+
 }
