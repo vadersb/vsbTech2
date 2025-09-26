@@ -1,6 +1,7 @@
 //(C) 2025 Alexander Samarin
 
 #pragma once
+#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <memory>
@@ -578,8 +579,9 @@ namespace vsb
 		{
             size_t result = 0;
 
-            auto updateResult = [&result](size_t size) {
-                if (size > result) result = size;
+            auto updateResult = [&result](const size_t size)
+			{
+                result = std::max(size, result);
             };
 
             updateResult(sizeof(FreeStandingFunctionCaller));

@@ -73,6 +73,7 @@ namespace vsb
 			{
 				auto pBasePtr = dynamic_cast<Object*>(m_pointer);
 				VSB_ASSERT(pBasePtr != nullptr, "Failed to downcast to Object");
+				// ReSharper disable once CppDFANullDereference
 				m_handle = pBasePtr->GetHandle();
 			}
 #endif
@@ -125,6 +126,7 @@ namespace vsb
 			VSB_ASSERT(m_pointer != nullptr, "pointer shouldn't be null if addressed via GetRef()");
 			PTR_HANDLE_CHECK;
 
+			// ReSharper disable once CppDFANullDereference
 			return *m_pointer;
 		}
 

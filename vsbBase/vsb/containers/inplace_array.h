@@ -107,22 +107,22 @@ namespace vsb
 		TValueType& operator[](const Index index) noexcept
 		{
 			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
-			return m_data[index];
+			return *GetPtr(index);
 		}
 
 
 		const TValueType& operator[](const Index index) const noexcept
 		{
 			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
-			return m_data[index];
+			return *GetPtr(index);
 		}
 
 
-		TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
+		[[nodiscard]] TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
 		{
 			if (index < m_count && index >= 0)
 			{
-				return m_data[index];
+				return *GetPtr(index);
 			}
 
 			return defaultValue;
@@ -133,7 +133,7 @@ namespace vsb
 		{
 			if (index < m_count && index >= 0)
 			{
-				m_data[index] = value;
+				*GetPtr(index) = value;
 			}
 		}
 
@@ -201,7 +201,7 @@ namespace vsb
 		}
 
 
-		const TValueType* GetPtr(const Index index) const noexcept
+		[[nodiscard]] const TValueType* GetPtr(const Index index) const noexcept
 		{
 			return std::launder(reinterpret_cast<const TValueType*>(m_data + index * sizeof(TValueType)));
 		}
@@ -213,4 +213,7 @@ namespace vsb
 
 		Count m_count = 0;
 	};
+
+	static_assert(std::is_trivially_copyable_v<InplaceArray<int, 5>> == false);
+
 }

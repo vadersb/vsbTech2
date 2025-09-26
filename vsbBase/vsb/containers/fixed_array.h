@@ -97,7 +97,7 @@ namespace vsb
 		}
 
 
-		TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
+		[[nodiscard]] TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
 		{
 			if (index < Size && index >= 0)
 			{
@@ -108,7 +108,7 @@ namespace vsb
 		}
 
 
-		TValueType Get(const FromEnd offsetFromEnd, const TValueType defaultValue = TValueType{}) const noexcept
+		[[nodiscard]] TValueType Get(const FromEnd offsetFromEnd, const TValueType defaultValue = TValueType{}) const noexcept
 		{
 			auto index = offsetFromEnd.GetIndex(Size);
 			if (index < Size && index >= 0)
@@ -176,4 +176,6 @@ namespace vsb
 
 	template<typename T, typename... U>
 	FixedArray(T, U...) -> FixedArray<T, 1 + sizeof...(U)>;
+
+	static_assert(std::is_trivially_copyable_v<FixedArray<int, 5>>);
 }

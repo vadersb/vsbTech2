@@ -40,13 +40,7 @@ namespace vsb::internal
 		Handle(const Handle& other) = default;
 		Handle& operator=(const Handle& other) = default;
 
-		Handle(Handle&& moveFrom) noexcept
-		{
-			m_generation = moveFrom.m_generation;
-			m_index = moveFrom.m_index;
-			moveFrom.m_generation = 0;
-			moveFrom.m_index = 0;
-		}
+		//custom move constructor was removed to preserve Handle as trivially copyable type
 
 		Handle(const uint32_t generation, const uint32_t index) : m_generation(generation), m_index(index)
 		{}
@@ -60,4 +54,7 @@ namespace vsb::internal
 		uint32_t m_generation {0};
 		uint32_t m_index {0};
 	};
+
+	static_assert(std::is_trivially_copyable_v<Handle>);
+	static_assert(std::is_standard_layout_v<Handle>);
 }

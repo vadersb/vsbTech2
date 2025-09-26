@@ -176,6 +176,28 @@ int main()
 
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
+
+	VSBLOG_INFO("some extra tests...");
+
+	bool isHndTriviallyCopyable = std::is_trivially_copyable_v<vsb::Hnd<TestManagedObject>>;
+
+	VSBLOG_INFO("Hnd<T> is trivially copyable: {}", isHndTriviallyCopyable);
+
+	bool isHndStandardLayout = std::is_standard_layout_v<vsb::Hnd<TestManagedObject>>;
+
+	VSBLOG_INFO("Hnd<T> is standard layout: {}", isHndStandardLayout);
+
+
+	bool isHandleTriviallyCopyable = std::is_trivially_copyable_v<vsb::internal::Handle>;
+
+	VSBLOG_INFO("Handle is trivially copyable: {}", isHandleTriviallyCopyable);
+
+	bool isHandleStandardLayout = std::is_standard_layout_v<vsb::internal::Handle>;
+
+	VSBLOG_INFO("Handle is standard layout: {}", isHandleStandardLayout);
+
+
+
 	//std::string str;
 
 	//std::cin >> str;

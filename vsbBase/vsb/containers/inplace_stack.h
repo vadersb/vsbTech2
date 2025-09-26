@@ -116,7 +116,7 @@ namespace vsb
 		[[nodiscard]] const TValueType* cend() const noexcept { return GetPtr(m_count); }
 
 
-		~InplaceStack()
+		~InplaceStack() requires std::is_trivially_destructible_v<TValueType>
 		{
 			Clear();
 		}

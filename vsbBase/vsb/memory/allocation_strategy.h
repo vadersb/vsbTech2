@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstdint>
 
 namespace vsb::memory
 {

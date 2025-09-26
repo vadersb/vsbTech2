@@ -14,17 +14,25 @@ namespace vsb
 
 		//todo later: sort by priority
 
-		for (auto& singletonEntry : singletonList)
+		for (Index i = singletonList.GetSize() - 1; i >= 0; i--)
 		{
-			if (auto* pSingleton = singletonEntry.pSingleton.ValidateAndGet())
+			if (auto* pSingleton = singletonList[i].pSingleton.ValidateAndGet())
 			{
-				delete pSingleton;
-			}
-			else
-			{
-				VSBLOG_WARN("Singleton is null");
+
 			}
 		}
+
+		// for (auto& singletonEntry : singletonList)
+		// {
+		// 	if (auto* pSingleton = singletonEntry.pSingleton.ValidateAndGet())
+		// 	{
+		// 		delete pSingleton;
+		// 	}
+		// 	else
+		// 	{
+		// 		VSBLOG_WARN("Singleton is null");
+		// 	}
+		// }
 
 		singletonList.Clear();
 	}

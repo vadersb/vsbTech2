@@ -210,6 +210,10 @@ namespace vsb
 		internal::Handle m_handle {};
 	};
 
+	static_assert(std::is_trivially_copyable_v<Hnd<Object>>);
+	static_assert(std::is_standard_layout_v<Hnd<Object>>);
+
+
 
 	template<typename T>
 	Hnd<T> CreateHnd(T* pointer)
