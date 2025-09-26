@@ -18,27 +18,16 @@ namespace vsb
 		{
 			if (auto* pSingleton = singletonList[i].pSingleton.ValidateAndGet())
 			{
-
+				delete pSingleton;
+			}
+			else
+			{
+				VSBLOG_ERROR("Singleton is null");
 			}
 		}
 
-		// for (auto& singletonEntry : singletonList)
-		// {
-		// 	if (auto* pSingleton = singletonEntry.pSingleton.ValidateAndGet())
-		// 	{
-		// 		delete pSingleton;
-		// 	}
-		// 	else
-		// 	{
-		// 		VSBLOG_WARN("Singleton is null");
-		// 	}
-		// }
-
 		singletonList.Clear();
 	}
-
-
-
 
 
 	void SingletonBase::RegisterSingleton(const SafePtr<SingletonBase> &singletonPtr, int priority)

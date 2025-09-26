@@ -220,10 +220,10 @@ namespace vsb
 			{
 				return pointer;
 			}
-			else if (std::is_base_of_v<T, U>)
-			{
-				return static_cast<T*>(pointer);
-			}
+			// else if (std::is_base_of_v<T, U>)
+			// {
+			// 	return static_cast<T*>(pointer);
+			// }
 
 			return dynamic_cast<T*>(pointer);
 		}
