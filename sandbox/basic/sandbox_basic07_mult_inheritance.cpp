@@ -56,7 +56,8 @@ namespace
 		template<typename T>
 		vsb::SafePtr<T> GetView()
 		{
-			return static_cast<vsb::SafePtr<T>>(m_Ptr);
+			//return m_Ptr;
+			return vsb::SafePtr<T>(m_Ptr);
 		}
 
 
@@ -75,6 +76,9 @@ namespace
 
 		virtual void DoDerivedItemStuff(std::string_view stringValue) = 0;
 	};
+
+
+	static_assert(vsb::VirtualInheritance<IItemView, IDerivedItemView>);
 
 
 	class DerivedItem : public Item

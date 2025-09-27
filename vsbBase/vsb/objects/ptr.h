@@ -146,14 +146,12 @@ namespace vsb
 		template<typename U>
 		T* ExtractPointer(U* pPointer)
 		{
-			if constexpr (std::is_base_of_v<T, U>)
+			if constexpr (std::is_same_v<T, U>)
 			{
-				return static_cast<T*>(pPointer);
+				return pPointer;
 			}
-			else
-			{
-				return dynamic_cast<T*>(pPointer);
-			}
+
+			return dynamic_cast<T*>(pPointer);
 		}
 
 

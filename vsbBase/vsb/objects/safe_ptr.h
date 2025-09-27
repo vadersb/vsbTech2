@@ -4,7 +4,7 @@
 
 #include "internal/handle.h"
 #include "internal/object_registry.h"
-
+#include "vsb/meta/virtual_inheritance.h"
 
 namespace vsb
 {
@@ -46,6 +46,7 @@ namespace vsb
 			}
 		}
 
+
 		template<typename U>
 		explicit(std::is_base_of_v<T, U> == false) SafePtr(const SafePtr<U>& other) :
 		    m_pointer(ExtractPointer(other.m_pointer)),
@@ -58,6 +59,7 @@ namespace vsb
 		        m_handle = internal::Handle::Empty;
 		    }
 		}
+
 
 		template<typename U>
 		explicit(std::is_base_of_v<T, U> == false) SafePtr(SafePtr<U>&& other) :
@@ -220,10 +222,6 @@ namespace vsb
 			{
 				return pointer;
 			}
-			// else if (std::is_base_of_v<T, U>)
-			// {
-			// 	return static_cast<T*>(pointer);
-			// }
 
 			return dynamic_cast<T*>(pointer);
 		}
