@@ -26,6 +26,10 @@ target_link_libraries(sandbox_basic05_object_registry vsbBase)
 add_executable(sandbox_basic06_delegates basic/sandbox_basic06_delegates.cpp)
 target_link_libraries(sandbox_basic06_delegates vsbBase)
 
-#07 - multiple inheritanec
+#07 - multiple inheritance
 add_executable(sandbox_basic07_mult_inheritance basic/sandbox_basic07_mult_inheritance.cpp)
 target_link_libraries(sandbox_basic07_mult_inheritance vsbBase)
+
+#08 - debug view
+add_executable(sandbox_basic08_debug_view basic/sandbox_basic08_debug_view.cpp)
+target_link_libraries(sandbox_basic08_debug_view vsbBase)

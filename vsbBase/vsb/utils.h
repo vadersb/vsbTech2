@@ -30,9 +30,10 @@ namespace vsb
 		}
 		else
 		{
-			static_assert(false);
-			return nullptr;
+			static_assert(false, "no safe cast way is found for types");
 		}
+
+		return nullptr;
 	}
 
 }

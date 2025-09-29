@@ -35,14 +35,14 @@ namespace vsb
 		{
 			if (m_pointer == nullptr && m_handle.IsEmpty() == false)
 			{
-				VSBLOG_ERROR("SafePtr pointer is null, while handle isn't");
+				VSBLOG_WARN("SafePtr pointer is null, while handle isn't");
 				m_handle = internal::Handle::Empty;
 				return;
 			}
 
 			if (m_pointer != nullptr && m_handle.IsEmpty())
 			{
-				VSBLOG_ERROR("SafePtr pointer isn't null, while handle is empty");
+				VSBLOG_WARN("SafePtr pointer isn't null, while handle is empty");
 				m_pointer = nullptr;
 			}
 		}
@@ -53,10 +53,8 @@ namespace vsb
 		    m_pointer(ExtractPointer(other.m_pointer)),
 		    m_handle(other.m_handle)
 		{
-		    // Validate the cast worked
-		    if (other.m_pointer != nullptr && m_pointer == nullptr)
+		    if (m_pointer == nullptr && m_handle.IsEmpty() == false)
 		    {
-		    	VSBLOG_ERROR("other pointer isn't null, while extracted one is");
 		        m_handle = internal::Handle::Empty;
 		    }
 		}
@@ -199,13 +197,7 @@ namespace vsb
 				return internal::Handle::Empty;
 			}
 
-			if constexpr (std::is_base_of_v<Object, T>)
-			{
-				const auto pBasePtr = static_cast<Object*>(pointer);
-				return pBasePtr->GetHandle();
-			}
-
-			const auto pBasePtr = dynamic_cast<Object*>(pointer);
+			const auto pBasePtr = vsb::SafeCast<Object>(pointer);
 			return pBasePtr == nullptr ? internal::Handle::Empty : pBasePtr->GetHandle();
 		}
 
