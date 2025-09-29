@@ -4,6 +4,7 @@
 #include "internal/handle.h"
 #include "internal/object_registry.h"
 #include "vsb/hash.h"
+#include "vsb/utils.h"
 
 namespace vsb
 {
@@ -115,15 +116,7 @@ namespace vsb
 			if (m_handle.IsEmpty()) return nullptr;
     
 			auto pBasePtr = internal::ObjectRegistry::GetInstance().GetObject(m_handle);
-			auto* pCastedPtr = static_cast<T*>(pBasePtr);  // Fast! Type already validated
-
-#ifdef DEBUG  // or #ifndef NDEBUG
-		    if (pBasePtr != nullptr)
-		    {
-		        auto* pDynamicCastedPointer = dynamic_cast<T*>(pBasePtr);
-		        VSB_ASSERT(pDynamicCastedPointer == pCastedPtr, "static_cast and dynamic_cast results differ!");
-			}
-#endif
+			auto pCastedPtr = vsb::SafeCast<T>(pBasePtr);
 
 			return pCastedPtr;
 		}
@@ -170,41 +163,22 @@ namespace vsb
 				return internal::Handle::Empty;
 			}
 
-			T* pTargetPtr;
-
-			if constexpr (std::same_as<T, U> || std::is_base_of_v<T, U>)
+			if constexpr (std::same_as<T, U> == false)
 			{
-				pTargetPtr = static_cast<T*>(pPointer);
-			}
-			else
-			{
-				pTargetPtr = dynamic_cast<T*>(pPointer);
-
-				if (pTargetPtr == nullptr)
+				if (const T* pCastedPtr = vsb::SafeCast<T>(pPointer); pCastedPtr == nullptr)
 				{
 					return internal::Handle::Empty;
 				}
 			}
 
-			if constexpr (std::is_base_of_v<Object, T>)
-			{
-				return static_cast<Object*>(pTargetPtr)->GetHandle();
-			}
-			else if (std::is_base_of_v<Object, U>)
-			{
-				return static_cast<Object*>(pPointer)->GetHandle();
-			}
-			else
-			{
-				const auto pBasePtr = dynamic_cast<Object*>(pPointer);
+			const auto pBasePtr = vsb::SafeCast<Object>(pPointer);
 
-				if (pBasePtr != nullptr)
-				{
-					return pBasePtr->GetHandle();
-				}
-
-				return internal::Handle::Empty;
+			if (pBasePtr != nullptr)
+			{
+				return pBasePtr->GetHandle();
 			}
+
+			return internal::Handle::Empty;
 		}
 
 		internal::Handle m_handle {};

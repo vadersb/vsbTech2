@@ -9,6 +9,7 @@
 
 #include "internal/handle.h"
 #include "internal/object_registry.h"
+#include "vsb/utils.h"
 
 
 #ifdef VSB_PTR_VALIDATE
@@ -146,12 +147,7 @@ namespace vsb
 		template<typename U>
 		T* ExtractPointer(U* pPointer)
 		{
-			if constexpr (std::is_same_v<T, U>)
-			{
-				return pPointer;
-			}
-
-			return dynamic_cast<T*>(pPointer);
+			return vsb::SafeCast<T>(pPointer);
 		}
 
 

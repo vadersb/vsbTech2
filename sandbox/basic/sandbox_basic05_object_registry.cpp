@@ -110,15 +110,23 @@ int main()
 
 		auto safePtr1 = vsb::CreateSafePtr(&t3);
 
+		vsb::SafePtr<vsb::Object> baseSafePtr1 = safePtr1;
+
+		VSBLOG_INFO("baseSafePtr1 is valid: {}", baseSafePtr1.IsValid());
+
 		if (safePtr1)
 		{
 			VSBLOG_INFO("safePtr1 is valid: {}", safePtr1.IsValid());
 			VSBLOG_INFO("safePtr1 value: {}", safePtr1->GetValue());
 		}
 
+		vsb::SafePtr<TestManagedObject> invalidSafePtr(safePtr1);
+
+
 		safePtr1.Reset();
 
 
+		VSBLOG_INFO("invalidSafePtr is valid: {}", invalidSafePtr.IsValid());
 
 		VSBLOG_INFO("t1 value: {}", t1.GetValue());
 		VSBLOG_INFO("t2 value: {}", t2.GetValue());

@@ -5,6 +5,7 @@
 #include "internal/handle.h"
 #include "internal/object_registry.h"
 #include "vsb/meta/virtual_inheritance.h"
+#include "vsb/utils.h"
 
 namespace vsb
 {
@@ -77,7 +78,6 @@ namespace vsb
 				VSBLOG_ERROR("other pointer isn't null, while extracted one is");
 				m_handle = internal::Handle::Empty;
 			}
-
 		}
 
 
@@ -213,19 +213,8 @@ namespace vsb
 		template<typename U>
 		static T* ExtractPointer(U* pointer)
 		{
-			if (pointer == nullptr)
-			{
-				return nullptr;
-			}
-
-			if constexpr (std::is_same_v<T, U>)
-			{
-				return pointer;
-			}
-
-			return dynamic_cast<T*>(pointer);
+			return vsb::SafeCast<T>(pointer);
 		}
-
 
 
 		T* m_pointer {nullptr};

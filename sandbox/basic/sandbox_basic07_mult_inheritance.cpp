@@ -135,6 +135,29 @@ namespace
 	};
 
 
+	class ClassA
+	{
+	public:
+		virtual ~ClassA() = default;
+	private:
+
+		int m_Value {};
+
+
+	};
+
+
+	class ClassB
+	{
+	public:
+		virtual ~ClassB() = default; //commenting this out will invalidate vsb::SafeCast()
+	private:
+
+		float m_Value {};
+
+
+	};
+
 
 
 }
@@ -162,5 +185,13 @@ int main()
 	item.UnregisterView();
 	item.DoDerivedItemStuff();
 	item.DoBaseItemStuff();
+
+
+	ClassA a;
+	ClassB b;
+
+	ClassA* pA = vsb::SafeCast<ClassA>(&b);
+
+	VSBLOG_INFO("pA = {}", reinterpret_cast<intptr_t>(pA));
 
 }
