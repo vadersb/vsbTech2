@@ -6,7 +6,7 @@
 #include "vsb/log.h"
 #include "vsb/objects/object.h"
 #include "vsb/objects/safe_ptr.h"
-
+#include <typeinfo>
 
 namespace
 {
@@ -108,6 +108,7 @@ int main()
 	ExtendedInherited ex2("okokok!", 333);
 
 
+
 	vsb::SafePtr<Base> p1(&b1);
 	vsb::SafePtr<Base> p2(&b2);
 	vsb::SafePtr<Base> p3(&ex1);
@@ -122,4 +123,5 @@ int main()
 
 	VSBLOG_INFO("is valid: {}", vec[3].IsValid());
 
+	VSBLOG_INFO("type id of vec[3]: {}", typeid(*(vec[3].Get())).name());
 }
