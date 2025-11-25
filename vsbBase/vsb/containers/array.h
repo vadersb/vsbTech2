@@ -81,74 +81,64 @@ namespace vsb
 
 
 		//access
+		TValueType& operator[](const IndexEx index) noexcept
+		{
+			bool isValid;
+			auto localIndex = index.GetIndex(m_count, isValid);
+
+			VSB_ASSERT(isValid, "Index out of bounds");
+
+			return m_data[localIndex];
+		}
+
+
 		TValueType& operator[](const Index index) noexcept
 		{
-			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
+			VSB_ASSERT(index >= 0 && index < m_count, "Index out of bounds");
 			return m_data[index];
 		}
 
 
-		TValueType& operator[](const FromEnd offsetFromEnd) noexcept
+		const TValueType& operator[](const IndexEx index) const noexcept
 		{
-			auto index = offsetFromEnd.GetIndex(m_count);
-			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
-			return m_data[index];
+			bool isValid;
+			auto localIndex = index.GetIndex(m_count, isValid);
+
+			VSB_ASSERT(isValid, "Index out of bounds");
+
+			return m_data[localIndex];
 		}
 
 
 		const TValueType& operator[](const Index index) const noexcept
 		{
-			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
+			VSB_ASSERT(index >= 0 && index < m_count, "Index out of bounds");
 			return m_data[index];
 		}
 
 
-		const TValueType& operator[](const FromEnd offsetFromEnd) const noexcept
+		TValueType Get(const IndexEx index, const TValueType defaultValue = TValueType{}) const noexcept
 		{
-			auto index = offsetFromEnd.GetIndex(m_count);
-			VSB_ASSERT_V(index < m_count && index >= 0, "Index out of bounds", index);
-			return m_data[index];
-		}
+			bool isValid;
+			auto localIndex = index.GetIndex(m_count, isValid);
 
-
-		TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
-		{
-			if (index < m_count && index >= 0)
+			if (isValid)
 			{
-				return m_data[index];
+				return m_data[localIndex];
 			}
 
 			return defaultValue;
 		}
 
 
-		TValueType Get(const FromEnd offsetFromEnd, const TValueType defaultValue = TValueType{}) const noexcept
+		void Set(const IndexEx index, const TValueType value) noexcept
 		{
-			auto index = offsetFromEnd.GetIndex(m_count);
-			if (index < m_count && index >= 0)
+			bool isValid;
+			auto localIndex = index.GetIndex(m_count, isValid);
+
+			if (isValid)
 			{
-				return m_data[index];
-			}
-
-			return defaultValue;
-		}
-
-
-		void Set(const Index index, const TValueType value) noexcept
-		{
-			if (index < m_count && index >= 0)
-			{
-				m_data[index] = value;
-			}
-		}
-
-
-		void Set(const FromEnd offsetFromEnd, const TValueType value) noexcept
-		{
-			auto index = offsetFromEnd.GetIndex(m_count);
-			if (index < m_count && index >= 0)
-			{
-				m_data[index] = value;
+				m_data[localIndex] = value;
 			}
 		}
 

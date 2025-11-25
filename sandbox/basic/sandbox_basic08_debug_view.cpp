@@ -94,6 +94,7 @@ namespace
 }
 
 
+static std::string s_SomeString = "some string";
 
 
 
@@ -124,4 +125,17 @@ int main()
 	VSBLOG_INFO("is valid: {}", vec[3].IsValid());
 
 	VSBLOG_INFO("type id of vec[3]: {}", typeid(*(vec[3].Get())).name());
+
+
+	std::vector<Base*> pointersVec;
+
+	pointersVec.push_back(p1.Get());
+	pointersVec.push_back(p2.Get());
+	pointersVec.push_back(p3.Get());
+	pointersVec.push_back(p4.Get());
+
+	VSBLOG_INFO("type id of pointersVec[3]: {}", typeid(*(pointersVec[3])).name());
+
+	VSBLOG_INFO(s_SomeString);
+
 }

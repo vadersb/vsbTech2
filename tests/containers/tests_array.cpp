@@ -100,7 +100,7 @@ TEST_CASE("Containers - Array", "[containers][array]")
 
 
 		REQUIRE(intsArray[0] == 0);
-		REQUIRE(intsArray[vsb::FromEnd(1)] == 15);
+		REQUIRE(intsArray[vsb::IndexEx(0, true)] == 15);
 
 		int resultingSum = 0;
 
@@ -118,7 +118,7 @@ TEST_CASE("Containers - Array", "[containers][array]")
 		}
 
 		REQUIRE(intsArray[0] == 10);
-		REQUIRE(intsArray[vsb::FromEnd(1)] == 25);
+		REQUIRE(intsArray[vsb::IndexEx(0, true)] == 25);
 	}
 
 }
