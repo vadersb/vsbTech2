@@ -67,46 +67,63 @@ namespace vsb
 
 
 		//access
-		TValueType& operator[](const IndexEx index) noexcept
+		TValueType& operator[](const Index index) noexcept
 		{
-			auto localIndex = index.GetIndex(Size);
+			VSB_ASSERT(index >= 0 && index < Size, "Index out of bounds");
+			return m_data[index];
+		}
+
+
+		const TValueType& operator[](const Index index) const noexcept
+		{
+			VSB_ASSERT(index >= 0 && index < Size, "Index out of bounds");
+			return m_data[index];
+		}
+
+
+		[[nodiscard]] TValueType& At(const Index index, bool fromEnd) noexcept
+		{
+			Index localIndex = fromEnd ? Size - 1 - index : index;
 
 			VSB_ASSERT(localIndex >= 0 && localIndex < Size, "Index out of bounds");
-
 			return m_data[localIndex];
 		}
 
 
-		const TValueType& operator[](const IndexEx index) const noexcept
+		[[nodiscard]] const TValueType& At(const Index index, bool fromEnd = false) const noexcept
 		{
-			auto localIndex = index.GetIndex(Size);
+			Index localIndex = internal::GetIndex(index, Size, fromEnd);
 
 			VSB_ASSERT(localIndex >= 0 && localIndex < Size, "Index out of bounds");
-
 			return m_data[localIndex];
 		}
 
 
-		[[nodiscard]] TValueType Get(const IndexEx index, const TValueType defaultValue = TValueType{}) const noexcept
+		[[nodiscard]] TValueType Get(const Index index, const TValueType defaultValue = TValueType{}) const noexcept
 		{
-			bool isValid;
-			auto localIndex = index.GetIndex(Size, isValid);
-
-			if (isValid)
+			if (index >= 0 && index < Size)
 			{
-				return m_data[localIndex];
+				return m_data[index];
 			}
 
 			return defaultValue;
 		}
 
 
-		void Set(const IndexEx index, const TValueType value) noexcept
+		void Set(const Index index, const TValueType value) noexcept
 		{
-			bool isValid;
-			auto localIndex = index.GetIndex(Size, isValid);
+			if (index >= 0 && index < Size)
+			{
+				m_data[index] = value;
+			}
+		}
 
-			if (isValid)
+
+		void Set(const Index index, const bool fromEnd, const TValueType value) noexcept
+		{
+			Index localIndex = internal::GetIndex(index, Size, fromEnd);
+
+			if (localIndex >= 0 && localIndex < Size)
 			{
 				m_data[localIndex] = value;
 			}

@@ -18,41 +18,12 @@ namespace vsb
 	};
 
 
-	struct IndexEx
+	namespace internal
 	{
-	public:
-
-		explicit(false) IndexEx(std::int64_t index, bool fromEnd = false)
+		constexpr Index GetIndex(const Index index, const Count count, const bool fromEnd)
 		{
-			m_index = index;
-			m_fromEnd = fromEnd;
+			return fromEnd ? count - 1 - index : index;
 		}
-
-
-		std::int64_t GetIndex(Count size) const noexcept
-		{
-			if (m_fromEnd)
-			{
-				return size - m_index - 1;
-			}
-
-			return m_index;
-		}
-
-
-		std::int64_t GetIndex(Count size, bool& isValid) const noexcept
-		{
-			std::int64_t localIndex = GetIndex(size);
-
-			isValid = localIndex >= 0 && localIndex < size;
-
-			return localIndex;
-		}
-
-
-	private:
-		Index m_index = 0;
-		bool m_fromEnd = false;
-	};
+	}
 
 }
