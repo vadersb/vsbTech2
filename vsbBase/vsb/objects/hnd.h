@@ -16,6 +16,7 @@ namespace vsb
 	{
 
 	friend struct Hash64Provider<Hnd<T>>;
+	template<typename U> friend class Hnd;
 
 	public:
 
@@ -108,6 +109,11 @@ namespace vsb
 			m_handle = internal::Handle::Empty;
 		}
 
+		template<typename U>
+		bool operator==(const Hnd<U>& other) const
+		{
+			return m_handle == other.m_handle;
+		}
 
 	private:
 

@@ -53,9 +53,11 @@ namespace vsb
 	struct DefaultDestructionTag;
 
 
-	template<bool publicDestroy = true, typename TDestructionTag = DefaultDestructionTag, memory::AllocationStrategy allocationStrategy = memory::AllocationStrategy::DefaultNewOperator>
+	template<bool publicDestroy = true, typename TDestructionTag = DefaultDestructionTag>
 	class ManagedObject : public ManagedObjectBase
 	{
+		friend class DestructionCentral;
+
 	public:
 
 		void Destroy() requires publicDestroy
@@ -68,8 +70,6 @@ namespace vsb
 
 		ManagedObject() = default;
 		~ManagedObject() override = default;
-
-	private:
 
 		void PassToDestructionCentral() final
 		{

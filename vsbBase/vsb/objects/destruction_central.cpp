@@ -3,11 +3,12 @@
 
 #include "destruction_central.h"
 #include "managed_object.h"
+#include "vsb/log.h"
 
 
 namespace vsb
 {
-	vsb::InplaceArray<DestructionCentral::DestructionList*, 256> DestructionCentral::s_DestructionLists {};
+	std::vector<DestructionCentral::DestructionList*> DestructionCentral::s_DestructionLists {};
 
 
 	void DestructionCentral::ProcessDefault()
@@ -38,15 +39,21 @@ namespace vsb
 	}
 
 
+	void DestructionCentral::DestroyObject(ManagedObjectBase* pObject)
+	{
+		delete pObject; // NOLINT(*-owning-memory)
+	}
+
+
 	void DestructionCentral::DestructionList::Add(ManagedObjectBase* pObject)
 	{
 		if (m_TargetMainList)
 		{
-			m_ObjectsToDestroy.Add(pObject);
+			m_ObjectsToDestroy.push_back(pObject);
 		}
 		else
 		{
-			m_ObjectsToDestroyExtra.Add(pObject);
+			m_ObjectsToDestroyExtra.push_back(pObject);
 		}
 	}
 
@@ -70,34 +77,34 @@ namespace vsb
 
 			bool hadDeletions = false;
 
-			if (m_ObjectsToDestroy.IsEmpty() == false)
+			if (m_ObjectsToDestroy.empty() == false)
 			{
 				hadDeletions = true;
 				hadAnyDeletions = true;
 
 				for (auto* pObject: m_ObjectsToDestroy)
 				{
-					delete pObject;
+					DestroyObject(pObject);
 				}
 
-				m_ObjectsToDestroy.Clear();
+				m_ObjectsToDestroy.clear();
 			}
 
 
 			//extra list
 			m_TargetMainList = true;
 
-			if (m_ObjectsToDestroyExtra.IsEmpty() == false)
+			if (m_ObjectsToDestroyExtra.empty() == false)
 			{
 				hadDeletions = true;
 				hadAnyDeletions = true;
 
 				for (auto* pObject: m_ObjectsToDestroyExtra)
 				{
-					delete pObject;
+					DestroyObject(pObject);
 				}
 
-				m_ObjectsToDestroyExtra.Clear();
+				m_ObjectsToDestroyExtra.clear();
 			}
 
 

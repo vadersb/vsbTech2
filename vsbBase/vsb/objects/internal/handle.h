@@ -26,10 +26,10 @@ namespace vsb::internal
 		template<typename T> friend class vsb::SafePtr;
 
 		[[nodiscard]] Hash64 GetHash64() const
-		{
-			const std::array hashValues = {m_generation, m_index};
-			return std::bit_cast<Hash64>(hashValues);
-		}
+	{
+		const std::array hashValues = {m_index, m_generation};
+		return std::bit_cast<Hash64>(hashValues);
+	}
 
 	private:
 
@@ -42,17 +42,17 @@ namespace vsb::internal
 
 		//custom move constructor was removed to preserve Handle as trivially copyable type
 
-		Handle(const uint32_t generation, const uint32_t index) : m_generation(generation), m_index(index)
+		Handle(const uint32_t index, const uint32_t generation) : m_index(index), m_generation(generation)
 		{}
 
 		[[nodiscard]] bool IsEmpty() const {return m_generation == 0;}
 
 		bool operator==(const Handle& rhs) const {return m_index == rhs.m_index && m_generation == rhs.m_generation;}
 
+		auto operator<=>(const Handle& rhs) const = default;
 
-
-		uint32_t m_generation {0};
-		uint32_t m_index {0};
+		uint32_t m_index {0};       // Primary sort key (slot)
+		uint32_t m_generation {0};  // Secondary sort key (version)
 	};
 
 	static_assert(std::is_trivially_copyable_v<Handle>);

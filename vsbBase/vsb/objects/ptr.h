@@ -28,6 +28,8 @@ namespace vsb
 	template<typename T>
 	class Ptr
 	{
+		template<typename U> friend class Ptr;
+
 	public:
 
 		Ptr() = default;
@@ -140,6 +142,22 @@ namespace vsb
 #endif
 		}
 
+		template<typename U>
+		bool operator==(const Ptr<U>& other) const
+		{
+            if constexpr (std::is_convertible_v<U*, T*>)
+            {
+                return m_pointer == static_cast<T*>(other.Get());
+            }
+            else if constexpr (std::is_base_of_v<Object, T> && std::is_base_of_v<Object, U>)
+            {
+                return m_pointer == other.Get(); // implicit to Object* if you want that route, but not required here
+            }
+            else
+            {
+                return m_pointer == dynamic_cast<const T*>(other.Get());
+            }
+		}
 
 	private:
 

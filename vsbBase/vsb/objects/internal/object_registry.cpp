@@ -2,6 +2,8 @@
 
 #include "object_registry.h"
 
+#include "vsb/containers/container_utils.h"
+
 namespace vsb::internal
 {
 
@@ -9,24 +11,26 @@ namespace vsb::internal
 	{
 		VSB_ASSERT(pObject != nullptr, "pObject shouldn't be null");
 		
-		if (m_freeIndices.IsEmpty())
+		if (m_freeIndices.empty())
 		{
-			VSBLOG_CRITICAL("ObjectRegistry is out of free slots!");
-			return Handle{}; // Return an empty handle instead of asserting
+			ExpandStorage();
 		}
 
-		const uint32_t index = m_freeIndices.Pop();
+		const uint32_t index = m_freeIndices.top();
+		m_freeIndices.pop();
 		
 		// Additional bounds check for safety
-		VSB_ASSERT(index < ObjectRegistryCapacity, "Invalid index from free indices stack");
+		VSB_ASSERT(index < m_entries.size(), "Invalid index from free indices stack");
 
-		auto& entry = m_entries[index];
+		auto& entry = m_entries.at(index);
 
 		entry.generation++;
 		entry.pObject = pObject;
 		entry.hint = hint;
 
-		return Handle(entry.generation, index);
+		m_currentlyRegisteredObjectsCount++;
+
+		return Handle(index, entry.generation);
 	}
 
 
@@ -41,13 +45,13 @@ namespace vsb::internal
 		const auto index = handle.m_index;
 
 		// Bounds checking
-		if (index >= ObjectRegistryCapacity)
+		if (index >= m_entries.size())
 		{
 			VSBLOG_ERROR("Handle index {} is out of bounds", index);
 			return;
 		}
 
-		auto& entry = m_entries[index];
+		auto& entry = m_entries.at(index);
 
 		if (entry.generation != handle.m_generation)
 		{
@@ -63,13 +67,15 @@ namespace vsb::internal
 		// Only add back to free indices if generation won't overflow on next use
 		if (entry.generation < std::numeric_limits<uint32_t>::max())
 		{
-			m_freeIndices.Push(static_cast<uint32_t>(index));
+			m_freeIndices.push(static_cast<uint32_t>(index));
 		}
 		else
 		{
 			m_exhaustedSlotsCount++;
 			VSBLOG_DEBUG("ObjectRegistry slot exhausted. index: {}, total exhausted slots: {}", index, m_exhaustedSlotsCount);
 		}
+
+		m_currentlyRegisteredObjectsCount--;
 	}
 
 
@@ -83,7 +89,7 @@ namespace vsb::internal
 		const auto index = handle.m_index;
 
 		// Bounds checking
-		if (index >= ObjectRegistryCapacity)
+		if (index >= m_entries.size())
 		{
 			VSBLOG_ERROR("Handle index {} is out of bounds", index);
 			return nullptr;
@@ -110,7 +116,7 @@ namespace vsb::internal
 		const auto index = handle.m_index;
 
 		// Bounds checking
-		if (index >= ObjectRegistryCapacity)
+		if (index >= m_entries.size())
 		{
 			return false;
 		}
@@ -127,32 +133,48 @@ namespace vsb::internal
 	}
 
 
-	ObjectRegistry::ObjectRegistry()
+	void ObjectRegistry::ExpandStorage()
 	{
+		for (size_t i = 0; i < ObjectRegistryCapacity; i++)
+		{
+			m_entries.emplace_back();
+			m_freeIndices.push(static_cast<uint32_t>(m_entries.size() - 1));
+		}
+	}
+
+
+	ObjectRegistry::ObjectRegistry()// :
+	//m_freeIndices(std::move(vsb::ReserveEmptyVector<uint32_t>(ObjectRegistryCapacity)))
+	{
+		m_entries.reserve(ObjectRegistryCapacity);
+
+		// Reserve capacity for the underlying vector of m_freeIndices
+		// This requires a small workaround since std::stack doesn't expose reserve().
+		std::vector<uint32_t> initialIndices;
+		initialIndices.reserve(ObjectRegistryCapacity);
 		for (Index i = ObjectRegistryCapacity - 1; i >= 0; i--)
 		{
-			m_freeIndices.Push(static_cast<uint32_t>(i));
+			initialIndices.push_back(static_cast<uint32_t>(i));
 		}
-
-		VSB_ASSERT(m_freeIndices.IsFull(), "Free indices stack should be full after initialization");
+		m_freeIndices = std::stack(std::move(initialIndices));
 	}
 
 
-	Count ObjectRegistry::GetCurrentlyRegisteredObjectsCount()
+	size_t ObjectRegistry::GetCurrentlyRegisteredObjectsCount()
 	{
-		return GetInstance().m_freeIndices.GetRemainingCapacity() - GetInstance().m_exhaustedSlotsCount;
+		return GetInstance().m_currentlyRegisteredObjectsCount;
 	}
 
 
-	Count ObjectRegistry::GetExhaustedSlotsCount()
+	size_t ObjectRegistry::GetExhaustedSlotsCount()
 	{
 		return GetInstance().m_exhaustedSlotsCount;
 	}
 
 
-	Count ObjectRegistry::GetAvailableSlotsCount()
+	size_t ObjectRegistry::GetAvailableSlotsCount()
 	{
-		return GetInstance().m_freeIndices.GetSize();
+		return GetInstance().m_freeIndices.size();
 	}
 
 

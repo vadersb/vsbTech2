@@ -12,14 +12,14 @@
 // Optional: Global test setup/teardown
 struct GlobalTestSetup
 {
-	vsb::internal::ObjectRegistryFinalizer* pObjectRegistryFinalizer;
+
 
 	GlobalTestSetup()
 	{
 		vsb::log::InitForTests();
 		VSBLOG_INFO("Global test setup init");
 		vsb::memory::AllocationSystem::Init();
-		pObjectRegistryFinalizer = new vsb::internal::ObjectRegistryFinalizer();
+		objectRegistryFinalizer = std::make_unique<vsb::internal::ObjectRegistryFinalizer>();
 	}
 
 	~GlobalTestSetup()
@@ -27,10 +27,14 @@ struct GlobalTestSetup
 		VSBLOG_INFO("Global test setup uninit");
 		vsb::DestructionCentral::Uninit();
 		vsb::SingletonBase::DestroyAllSingletons();
-		delete pObjectRegistryFinalizer;
+		objectRegistryFinalizer.reset();
 		vsb::memory::AllocationSystem::Uninit();
 		vsb::log::Uninit();
 	}
+
+private:
+
+	std::unique_ptr<vsb::internal::ObjectRegistryFinalizer> objectRegistryFinalizer;
 };
 
 static GlobalTestSetup g_testSetup;

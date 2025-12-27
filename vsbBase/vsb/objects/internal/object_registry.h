@@ -1,6 +1,10 @@
 //(C) 2025 Alexander Samarin
 
 #pragma once
+#include <cstddef>
+#include <stack>
+#include <vector>
+
 #include "vsb/containers/container_defs.h"
 #include "vsb/containers/fixed_array.h"
 #include "vsb/containers/inplace_stack.h"
@@ -17,7 +21,7 @@ namespace vsb
 
 namespace vsb::internal
 {
-	constexpr Count ObjectRegistryCapacity = 1024 * 64;
+	constexpr Count ObjectRegistryCapacity = 1024 * 8;
 
 	class ObjectRegistryFinalizer
 	{
@@ -46,9 +50,9 @@ namespace vsb::internal
 		};
 
 		//queries
-		static Count GetCurrentlyRegisteredObjectsCount();
-		static Count GetExhaustedSlotsCount();
-		static Count GetAvailableSlotsCount();
+		static size_t GetCurrentlyRegisteredObjectsCount();
+		static size_t GetExhaustedSlotsCount();
+		static size_t GetAvailableSlotsCount();
 		static ActiveObjectStats GetActiveObjectStats();
 
 	private:
@@ -61,6 +65,8 @@ namespace vsb::internal
 
 		static ObjectRegistry& GetInstance();
 
+		void ExpandStorage();
+
 		ObjectRegistry();
 
 		static void WrapUp();
@@ -72,9 +78,11 @@ namespace vsb::internal
 			ObjectHint hint = ObjectHint::Unspecified;
 		};
 
-		FixedArray<Entry, ObjectRegistryCapacity> m_entries {};
-		InplaceStack<uint32_t, ObjectRegistryCapacity> m_freeIndices;
+		//FixedArray<Entry, ObjectRegistryCapacity> m_entries {};
+		std::vector<Entry> m_entries {ObjectRegistryCapacity, Entry()};
+		std::stack<uint32_t, std::vector<uint32_t>> m_freeIndices {};
 
-		Count m_exhaustedSlotsCount = 0;
+		size_t m_exhaustedSlotsCount = 0;
+		size_t m_currentlyRegisteredObjectsCount = 0;
 	};
 }

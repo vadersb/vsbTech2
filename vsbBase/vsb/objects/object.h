@@ -25,7 +25,7 @@ namespace vsb
 		template<typename T> friend class Hnd;
 		template<typename T> friend class Ptr;
 		template<typename T> friend class SafePtr;
-		friend class DestructionCentral;
+
 
 	public:
 		//no copying/moving

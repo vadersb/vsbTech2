@@ -2,29 +2,22 @@
 
 #pragma once
 
-#include "vsb/containers/inplace_array.h"
+#include <vector>
 
 
 namespace vsb
 {
-	namespace memory
-	{
-		enum class AllocationStrategy : uint8_t;
-	}
-
 	class ManagedObjectBase;
 	struct DefaultDestructionTag;
 
-	template<bool publicDestroy, typename TDestructionTag, memory::AllocationStrategy allocationStrategy>
+	template<bool publicDestroy, typename TDestructionTag>
 	class ManagedObject;
-
-	constexpr Count DestructionListCapacity = 1024 * 16;
 
 
 	class DestructionCentral
 	{
 
-		template<bool publicDestroy, typename TDestructionTag, memory::AllocationStrategy allocationStrategy>
+		template<bool publicDestroy, typename TDestructionTag>
 		friend class vsb::ManagedObject;
 
 	public:
@@ -48,6 +41,8 @@ namespace vsb
 
 		static void ProcessAll();
 
+		static void DestroyObject(ManagedObjectBase* pObject);
+
 
 		class DestructionList
 		{
@@ -55,7 +50,7 @@ namespace vsb
 
 			DestructionList()
 			{
-				s_DestructionLists.Add(this);
+				s_DestructionLists.push_back(this);
 			}
 
 
@@ -76,8 +71,8 @@ namespace vsb
 
 			bool m_IsProcessing = false;
 			bool m_TargetMainList = true;
-			InplaceArray<ManagedObjectBase*, DestructionListCapacity> m_ObjectsToDestroy {};
-			InplaceArray<ManagedObjectBase*, DestructionListCapacity> m_ObjectsToDestroyExtra {};
+			std::vector<ManagedObjectBase*> m_ObjectsToDestroy {};
+			std::vector<ManagedObjectBase*> m_ObjectsToDestroyExtra {};
 		};
 
 
@@ -88,9 +83,7 @@ namespace vsb
 			destructionList.Add(pObject);
 		}
 
-		static constexpr Count DestructionListCount = 256;
-
-		static vsb::InplaceArray<DestructionList*, DestructionListCount> s_DestructionLists;
+		static std::vector<DestructionList*> s_DestructionLists;
 
 
 	};
