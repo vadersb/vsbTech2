@@ -26,23 +26,26 @@ namespace vsb::internal
 		template<typename T> friend class vsb::SafePtr;
 
 		[[nodiscard]] Hash64 GetHash64() const
-	{
-		const std::array hashValues = {m_index, m_generation};
-		return std::bit_cast<Hash64>(hashValues);
-	}
+		{
+			const std::array hashValues = {m_index, m_generation};
+			return std::bit_cast<Hash64>(hashValues);
+		}
 
 	private:
 
 		static const Handle Empty;
 
 		Handle() = default;
+		~Handle() = default;
 
 		Handle(const Handle& other) = default;
+		Handle(Handle&& other) = default;
 		Handle& operator=(const Handle& other) = default;
+		Handle& operator=(Handle&& other) = default;
 
 		//custom move constructor was removed to preserve Handle as trivially copyable type
 
-		Handle(const uint32_t index, const uint32_t generation) : m_index(index), m_generation(generation)
+		Handle(const uint32_t index, const uint32_t generation) : m_index(index), m_generation(generation) // NOLINT(*-easily-swappable-parameters)
 		{}
 
 		[[nodiscard]] bool IsEmpty() const {return m_generation == 0;}
