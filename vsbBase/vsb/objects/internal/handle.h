@@ -1,8 +1,8 @@
 //(C) 2025 Alexander Samarin
 
 #pragma once
-#include <cstdint>
 #include "vsb/hash.h"
+#include <cstdint>
 
 namespace vsb
 {

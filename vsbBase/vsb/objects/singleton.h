@@ -9,8 +9,14 @@
 
 namespace vsb
 {
+	template<typename TSingleton, int priority>
+	class Singleton;
+
 	class SingletonBase : public Object
 	{
+		template<typename TSingleton, int priority>
+		friend class Singleton;
+
 	public:
 
 		static void DestroyAllSingletons();
@@ -22,11 +28,9 @@ namespace vsb
 
 		~SingletonBase() override = default;
 
+	private:
 
 		static void RegisterSingleton(const SafePtr<SingletonBase> &singletonPtr, int priority = 0);
-
-
-	private:
 
 		struct SingletonEntry
 		{
