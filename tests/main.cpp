@@ -1,40 +1,36 @@
-//(C) 2025 Alexander Samarin
+// main.cpp
 
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER  // Tell Catch2 we're providing our own main
 #include <catch2/catch_all.hpp>
 
 #include "vsb/log.h"
 #include "vsb/memory/memory.h"
-#include "vsb/objects/internal/object_registry.h"
 #include "vsb/objects/destruction_central.h"
 #include "vsb/objects/singleton.h"
+#include "vsb/objects/internal/object_registry.h"
 
-// Optional: Global test setup/teardown
-struct GlobalTestSetup
+int main(int argc, char* argv[])
 {
+    // === SETUP ===
+    vsb::log::InitForTests();
+    VSBLOG_INFO("Global test setup init");
+    vsb::memory::AllocationSystem::Init();
 
+    // Run all Catch2 tests
+    int const result = Catch::Session().run(argc, argv);
 
-	GlobalTestSetup()
-	{
-		vsb::log::InitForTests();
-		VSBLOG_INFO("Global test setup init");
-		vsb::memory::AllocationSystem::Init();
-		objectRegistryFinalizer = std::make_unique<vsb::internal::ObjectRegistryFinalizer>();
-	}
+    // === TEARDOWN ===
+    // This runs BEFORE any static destructors!
+    VSBLOG_INFO("Global test setup uninit");
+    vsb::DestructionCentral::Uninit();
+    vsb::SingletonBase::DestroyAllSingletons();
 
-	~GlobalTestSetup()
-	{
-		VSBLOG_INFO("Global test setup uninit");
-		vsb::DestructionCentral::Uninit();
-		vsb::SingletonBase::DestroyAllSingletons();
-		objectRegistryFinalizer.reset();
-		vsb::memory::AllocationSystem::Uninit();
-		vsb::log::Uninit();
-	}
+    {
+        vsb::internal::ObjectRegistryFinalizer const finalizer;
+    }
 
-private:
+    vsb::memory::AllocationSystem::Uninit();
+    vsb::log::Uninit();
 
-	std::unique_ptr<vsb::internal::ObjectRegistryFinalizer> objectRegistryFinalizer;
-};
-
-static GlobalTestSetup g_testSetup;
+    return result;
+}

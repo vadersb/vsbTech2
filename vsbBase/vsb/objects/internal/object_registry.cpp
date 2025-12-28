@@ -6,6 +6,7 @@
 
 namespace vsb::internal
 {
+	bool ObjectRegistry::s_IsTerminated = false;
 
 	Handle ObjectRegistry::RegisterObject(Object* pObject, ObjectHint hint)
 	{
@@ -223,7 +224,18 @@ namespace vsb::internal
 	{
 		VSBLOG_INFO("Wrapping up ObjectRegistry.");
 
+		if (s_IsTerminated)
+		{
+			VSBLOG_CRITICAL("ObjectRegistry is already terminated!");
+			return;
+		}
+
 		auto stats = GetActiveObjectStats();
+
+		if (stats.unspecifiedObjectsCount > 0)
+		{
+			VSBLOG_ERROR("Error on ObjectRegistry wrap-up. unspecifiedObjectsCount: {}", stats.unspecifiedObjectsCount);
+		}
 
 		if (stats.scopedObjectsCount > 0)
 		{
@@ -234,11 +246,24 @@ namespace vsb::internal
 		{
 			VSBLOG_ERROR("Error on ObjectRegistry wrap-up. managedObjectsCount: {}", stats.managedObjectsCount);
 		}
+
+		if (stats.singletonObjectsCount > 0)
+		{
+			VSBLOG_ERROR("Error on ObjectRegistry wrap-up. singletonObjectsCount: {}", stats.singletonObjectsCount);
+		}
+
+		//static objects are fine
 	}
 
 
 	ObjectRegistryFinalizer::~ObjectRegistryFinalizer()
 	{
 		ObjectRegistry::WrapUp();
+	}
+
+
+	ObjectRegistry::~ObjectRegistry()
+	{
+		s_IsTerminated = true;
 	}
 }

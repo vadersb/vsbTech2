@@ -40,6 +40,8 @@ namespace vsb::internal
 
 	public:
 
+		~ObjectRegistry();
+
 		struct ActiveObjectStats
 		{
 			Count unspecifiedObjectsCount = 0;
@@ -63,11 +65,13 @@ namespace vsb::internal
 		[[nodiscard]] Object* GetObject(const Handle& handle) const;
 		[[nodiscard]] bool    ValidateHandle(const Handle& handle) const;
 
+		static bool s_IsTerminated;
 		static ObjectRegistry& GetInstance();
 
 		void ExpandStorage();
 
 		ObjectRegistry();
+
 
 		static void WrapUp();
 

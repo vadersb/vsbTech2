@@ -16,12 +16,23 @@ namespace vsb
 
 	Object::~Object()
 	{
+		if (internal::ObjectRegistry::s_IsTerminated == true)
+		{
+			return;
+		}
+
 		internal::ObjectRegistry::GetInstance().UnregisterObject(m_handle);
 	}
 
 
 	internal::Handle Object::RegisterHandle(ObjectHint objectHint)
 	{
+		if (internal::ObjectRegistry::s_IsTerminated == true)
+		{
+			VSB_ASSERT(false, "ObjectRegistry is terminated");
+			return internal::Handle::Empty;
+		}
+
 		return internal::ObjectRegistry::GetInstance().RegisterObject(this, objectHint);
 	}
 }

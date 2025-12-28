@@ -18,7 +18,7 @@ namespace vsb
 		{
 			if (auto* pSingleton = singletonList[i].pSingleton.ValidateAndGet())
 			{
-				delete pSingleton;
+				delete pSingleton; // NOLINT(*-owning-memory)
 			}
 			else
 			{
@@ -33,7 +33,7 @@ namespace vsb
 	void SingletonBase::RegisterSingleton(const SafePtr<SingletonBase> &singletonPtr, int priority)
 	{
 		auto& singletonList = GetSingletonList();
-		singletonList.Add(SingletonEntry{ singletonPtr, priority });
+		singletonList.Add(SingletonEntry{ .pSingleton=singletonPtr, .priority=priority });
 	}
 
 
