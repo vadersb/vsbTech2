@@ -3,6 +3,8 @@
 #pragma once
 #include "container_defs.h"
 #include "vsb/debug.h"
+#include <memory>
+#include <type_traits>
 
 
 namespace vsb
@@ -15,6 +17,100 @@ namespace vsb
 
 		// Default constructor
 		InplaceArray() = default;
+
+		// Copy constructor
+		InplaceArray(const InplaceArray& other) noexcept(std::is_nothrow_copy_constructible_v<TValueType>)
+		{
+			for (Index i = 0; i < other.m_count; ++i)
+			{
+				new (GetRawPtr(i)) TValueType(*other.GetPtr(i));
+			}
+			m_count = other.m_count;
+		}
+
+		// Move constructor
+		InplaceArray(InplaceArray&& other) noexcept(std::is_nothrow_move_constructible_v<TValueType>)
+		{
+			for (Index i = 0; i < other.m_count; ++i)
+			{
+				new (GetRawPtr(i)) TValueType(std::move(*other.GetPtr(i)));
+			}
+			m_count = other.m_count;
+			other.Clear();
+		}
+
+		// Copy assignment operator
+		InplaceArray& operator=(const InplaceArray& other) noexcept(
+			std::is_nothrow_copy_constructible_v<TValueType> &&
+			std::is_nothrow_copy_assignable_v<TValueType>)
+		{
+			if (this == std::addressof(other))
+			{
+				return *this;
+			}
+
+			// Assign to existing elements
+			const Index minCount = (m_count < other.m_count) ? m_count : other.m_count;
+			for (Index i = 0; i < minCount; ++i)
+			{
+				*GetPtr(i) = *other.GetPtr(i);
+			}
+
+			// Construct new elements if other has more
+			for (Index i = minCount; i < other.m_count; ++i)
+			{
+				new (GetRawPtr(i)) TValueType(*other.GetPtr(i));
+			}
+
+			// Destroy excess elements if we had more
+			if constexpr (!std::is_trivially_destructible_v<TValueType>)
+			{
+				for (Index i = other.m_count; i < m_count; ++i)
+				{
+					std::destroy_at(GetPtr(i));
+				}
+			}
+
+			m_count = other.m_count;
+			return *this;
+		}
+
+		// Move assignment operator
+		InplaceArray& operator=(InplaceArray&& other) noexcept(
+			std::is_nothrow_move_constructible_v<TValueType> &&
+			std::is_nothrow_move_assignable_v<TValueType>)
+		{
+			if (this == std::addressof(other))
+			{
+				return *this;
+			}
+
+			// Assign to existing elements
+			const Index minCount = (m_count < other.m_count) ? m_count : other.m_count;
+			for (Index i = 0; i < minCount; ++i)
+			{
+				*GetPtr(i) = std::move(*other.GetPtr(i));
+			}
+
+			// Construct new elements if other has more
+			for (Index i = minCount; i < other.m_count; ++i)
+			{
+				new (GetRawPtr(i)) TValueType(std::move(*other.GetPtr(i)));
+			}
+
+			// Destroy excess elements if we had more
+			if constexpr (!std::is_trivially_destructible_v<TValueType>)
+			{
+				for (Index i = other.m_count; i < m_count; ++i)
+				{
+					std::destroy_at(GetPtr(i));
+				}
+			}
+
+			m_count = other.m_count;
+			other.Clear();
+			return *this;
+		}
 
 		//adding an element to back
 		void Add(const TValueType& value) noexcept(std::is_nothrow_copy_constructible_v<TValueType>)
@@ -79,11 +175,10 @@ namespace vsb
 			if (m_count == Capacity)
 			{
 				VSBLOG_CRITICAL("InplaceArray::Add overflow");
-				return {};
+				return *GetPtr(0); // Return first element as fallback (UB if empty, but we're in error state anyway)
 			}
 
-			auto ptr = GetRawPtr(m_count);
-			new (ptr) TValueType(std::forward<Args>(args)...);
+			new (GetRawPtr(m_count)) TValueType(std::forward<Args>(args)...);
 			return *GetPtr(m_count++);
 		}
 
@@ -189,27 +284,35 @@ namespace vsb
 
 	private:
 
+		struct StorageUnit
+		{
+			alignas(TValueType) std::byte data[sizeof(TValueType)];
+		};
+
 		void* GetRawPtr(const Index index) noexcept
 		{
-			return static_cast<void*>(m_data + index * sizeof(TValueType));
+			return std::addressof(m_data[index].data);
+		}
+
+		[[nodiscard]] const void* GetRawPtr(const Index index) const noexcept
+		{
+			return std::addressof(m_data[index].data);
 		}
 
 
 		TValueType* GetPtr(const Index index) noexcept
 		{
-			return std::launder(reinterpret_cast<TValueType*>(m_data + index * sizeof(TValueType)));
+			return reinterpret_cast<TValueType*>(std::addressof(m_data[index].data)); // NOLINT(*-pro-type-reinterpret-cast)
 		}
 
 
 		[[nodiscard]] const TValueType* GetPtr(const Index index) const noexcept
 		{
-			return std::launder(reinterpret_cast<const TValueType*>(m_data + index * sizeof(TValueType)));
+			return reinterpret_cast<const TValueType*>(std::addressof(m_data[index].data)); // NOLINT(*-pro-type-reinterpret-cast)
 		}
 
 
-		static constexpr Count DataCapacity = Capacity * sizeof(TValueType);
-
-		alignas(TValueType) std::byte m_data[DataCapacity] = {};
+		StorageUnit m_data[Capacity];
 
 		Count m_count = 0;
 	};
