@@ -21,11 +21,18 @@ namespace vsb
 		// Copy constructor
 		InplaceArray(const InplaceArray& other) noexcept(std::is_nothrow_copy_constructible_v<TValueType>)
 		{
-			for (Index i = 0; i < other.m_count; ++i)
-			{
-				new (GetRawPtr(i)) TValueType(*other.GetPtr(i));
-			}
-			m_count = other.m_count;
+            if constexpr (std::is_trivially_copyable_v<TValueType>)
+            {
+                std::memcpy(m_data, other.m_data, other.m_count * sizeof(StorageUnit));
+            }
+            else
+            {
+                for (Index i = 0; i < other.m_count; ++i)
+                {
+                    new (GetRawPtr(i)) TValueType(*other.GetPtr(i));
+                }
+            }
+            m_count = other.m_count;
 		}
 
 		// Move constructor
