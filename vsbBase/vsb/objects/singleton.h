@@ -4,7 +4,6 @@
 
 #include "object.h"
 #include "safe_ptr.h"
-#include "vsb/containers/inplace_array.h"
 
 
 namespace vsb
@@ -36,14 +35,18 @@ namespace vsb
 		{
 			SafePtr<SingletonBase> pSingleton;
 			int priority;
+
+			auto operator<=>(const SingletonEntry& other) const
+			{
+				return priority <=> other.priority;
+			}
 		};
 
-		static constexpr Count SingletonEntriesMaxCount = 1024;
+		static constexpr size_t SingletonEntriesMaxCount = 1024;
 
-		using SingletonList = InplaceArray<SingletonEntry, SingletonEntriesMaxCount>;
+		using SingletonList = std::pmr::vector<SingletonEntry>;
 
 		static SingletonList& GetSingletonList();
-
 	};
 
 

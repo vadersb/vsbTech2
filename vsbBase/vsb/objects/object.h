@@ -49,4 +49,13 @@ namespace vsb
 
 		internal::Handle m_handle;
 	};
+
+
+	class ScopedObject : public Object
+	{
+	protected:
+
+		ScopedObject() : Object(ObjectHint::Scoped)
+		{}
+	};
 }

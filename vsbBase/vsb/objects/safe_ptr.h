@@ -4,6 +4,7 @@
 
 #include "internal/handle.h"
 #include "internal/object_registry.h"
+#include "vsb/debug.h"
 #include "vsb/meta/virtual_inheritance.h"
 #include "vsb/utils.h"
 
@@ -27,22 +28,27 @@ namespace vsb
 		SafePtr& operator=(SafePtr&&) = default;
 
 
-		//constructing from raw pointer
+		//constructing from a raw pointer
 		template<typename U>
 		explicit(std::is_base_of_v<T, U> == false) SafePtr(U* pointer) :
 			m_pointer(ExtractPointer(pointer)),
-			m_handle(ExtractHandle(m_pointer))
+			m_handle(ExtractHandle(pointer))
 		{
+			// ReSharper disable once CppDFANotInitializedField
 			if (m_pointer == nullptr && m_handle.IsEmpty() == false)
 			{
 				VSBLOG_WARN("SafePtr pointer is null, while handle isn't");
+				// ReSharper disable once CppDFAUnreachableCode
 				m_handle = internal::Handle::Empty;
 				return;
 			}
 
+			// ReSharper disable once CppDFAConstantConditions
+			// ReSharper disable once CppDFANotInitializedField
 			if (m_pointer != nullptr && m_handle.IsEmpty())
 			{
 				VSBLOG_WARN("SafePtr pointer isn't null, while handle is empty");
+				// ReSharper disable once CppDFAUnreachableCode
 				m_pointer = nullptr;
 			}
 		}
@@ -218,6 +224,9 @@ namespace vsb
 		T* m_pointer {nullptr};
 		internal::Handle m_handle {};
 	};
+
+	static_assert(std::is_trivially_copyable_v<SafePtr<Object>>);
+	static_assert(std::is_standard_layout_v<SafePtr<Object>>);
 
 
 	template<typename T>

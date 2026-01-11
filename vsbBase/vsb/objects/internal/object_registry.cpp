@@ -1,7 +1,7 @@
 //(C) 2025 Alexander Samarin
 
 #include "object_registry.h"
-
+#include "vsb/debug.h"
 #include "vsb/containers/container_utils.h"
 
 namespace vsb::internal
@@ -153,10 +153,11 @@ namespace vsb::internal
 		// This requires a small workaround since std::stack doesn't expose reserve().
 		std::vector<uint32_t> initialIndices;
 		initialIndices.reserve(ObjectRegistryCapacity);
-		for (Index i = ObjectRegistryCapacity - 1; i >= 0; i--)
+		for (uint32_t i = 0; i < ObjectRegistryCapacity; i--)
 		{
-			initialIndices.push_back(static_cast<uint32_t>(i));
+			initialIndices.push_back(ObjectRegistryCapacity - 1 - i);
 		}
+
 		m_freeIndices = std::stack(std::move(initialIndices));
 	}
 

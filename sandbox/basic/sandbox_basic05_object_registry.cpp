@@ -12,13 +12,15 @@
 #include "vsb/objects/internal/object_registry.h"
 
 
+using namespace vsb;
+
 namespace
 {
-	class TestScopedObject : public vsb::Object
+	class TestScopedObject : public ScopedObject
 	{
 	public:
 
-		explicit TestScopedObject(const int value) : Object(vsb::ObjectHint::Scoped), m_value(value)
+		explicit TestScopedObject(const int value) : m_value(value)
 		{}
 
 		[[nodiscard]] int GetValue() const {return m_value;}
@@ -32,7 +34,7 @@ namespace
 	};
 
 
-	class TestManagedObject : public vsb::ManagedObject<>
+	class TestManagedObject : public ManagedObjectDefault
 	{
 	public:
 
@@ -42,7 +44,7 @@ namespace
 		}
 
 
-		static vsb::SafePtr<TestManagedObject> Create(const int value)
+		static SafePtr<TestManagedObject> Create(const int value)
 		{
 			return new TestManagedObject(value);
 		}
@@ -57,6 +59,11 @@ namespace
 		[[nodiscard]] int GetValue() const {return m_value;}
 		void SetValue(const int value) {m_value = value;}
 
+		void Destroy()
+		{
+			ScheduleForDestruction();
+		}
+
 	private:
 
 		int m_value;
@@ -69,15 +76,15 @@ namespace
 
 int main()
 {
-	vsb::internal::ObjectRegistryFinalizer objectRegistryFinalizer;
+	internal::ObjectRegistryFinalizer objectRegistryFinalizer;
 
-	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+	VSBLOG_INFO("objects in registry: {}", internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 	{
 		TestScopedObject t1(123);
-		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
-		auto hnd1 = vsb::CreateHnd(&t1);
+		auto hnd1 = CreateHnd(&t1);
 
 		VSBLOG_INFO("hnd1 is valid: {}", hnd1.IsValid());
 
@@ -95,9 +102,9 @@ int main()
 
 
 		TestScopedObject t2(456);
-		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
-		auto ptr1 = vsb::CreatePtr(&t2);
+		auto ptr1 = CreatePtr(&t2);
 
 		VSBLOG_INFO("ptr1 is valid: {}", ptr1.IsValid());
 
@@ -106,11 +113,11 @@ int main()
 		ptr1.Reset();
 
 		TestScopedObject t3(789);
-		VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
+		VSBLOG_INFO("objects in registry: {}", internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
-		auto safePtr1 = vsb::CreateSafePtr(&t3);
+		auto safePtr1 = CreateSafePtr(&t3);
 
-		vsb::SafePtr<vsb::Object> baseSafePtr1 = safePtr1;
+		SafePtr<Object> baseSafePtr1 = safePtr1;
 
 		VSBLOG_INFO("baseSafePtr1 is valid: {}", baseSafePtr1.IsValid());
 
@@ -120,7 +127,7 @@ int main()
 			VSBLOG_INFO("safePtr1 value: {}", safePtr1->GetValue());
 		}
 
-		vsb::SafePtr<TestManagedObject> invalidSafePtr(safePtr1);
+		SafePtr<TestManagedObject> invalidSafePtr(safePtr1);
 
 
 		safePtr1.Reset();
@@ -133,7 +140,7 @@ int main()
 		VSBLOG_INFO("t3 value: {}", t3.GetValue());
 
 
-		const auto stats = vsb::internal::ObjectRegistry::GetActiveObjectStats();
+		const auto stats = internal::ObjectRegistry::GetActiveObjectStats();
 
 		VSBLOG_INFO("unspecified objcts count: {}", stats.unspecifiedObjectsCount);
 		VSBLOG_INFO("static objects count: {}", stats.staticObjectsCount);
@@ -143,7 +150,7 @@ int main()
 	}
 
 
-	const auto m1 = vsb::CreateSafePtr(new TestManagedObject(112233));
+	const auto m1 = CreateSafePtr(new TestManagedObject(112233));
 
 	VSBLOG_INFO("m1 value: {}", m1->GetValue());
 
@@ -179,7 +186,7 @@ int main()
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
 
-	vsb::DestructionCentral::ProcessDefault();
+	DestructionCentral::ProcessDefault();
 
 
 	VSBLOG_INFO("objects in registry: {}", vsb::internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
@@ -187,20 +194,29 @@ int main()
 
 	VSBLOG_INFO("some extra tests...");
 
-	bool isHndTriviallyCopyable = std::is_trivially_copyable_v<vsb::Hnd<TestManagedObject>>;
+	bool isHndTriviallyCopyable = std::is_trivially_copyable_v<Hnd<TestManagedObject>>;
 
 	VSBLOG_INFO("Hnd<T> is trivially copyable: {}", isHndTriviallyCopyable);
 
-	bool isHndStandardLayout = std::is_standard_layout_v<vsb::Hnd<TestManagedObject>>;
+	bool isHndStandardLayout = std::is_standard_layout_v<Hnd<TestManagedObject>>;
 
 	VSBLOG_INFO("Hnd<T> is standard layout: {}", isHndStandardLayout);
 
 
-	bool isHandleTriviallyCopyable = std::is_trivially_copyable_v<vsb::internal::Handle>;
+	bool isSafePtrTriviallyCopyable = std::is_trivially_copyable_v<SafePtr<TestManagedObject>>;
+
+	VSBLOG_INFO("SafePtr<T> is trivially copyable: {}", isSafePtrTriviallyCopyable);
+
+	bool isSafePtrStandardLayout = std::is_standard_layout_v<SafePtr<TestManagedObject>>;
+
+	VSBLOG_INFO("SafePtr<T> is standard layout: {}", isSafePtrStandardLayout);
+
+
+	bool isHandleTriviallyCopyable = std::is_trivially_copyable_v<internal::Handle>;
 
 	VSBLOG_INFO("Handle is trivially copyable: {}", isHandleTriviallyCopyable);
 
-	bool isHandleStandardLayout = std::is_standard_layout_v<vsb::internal::Handle>;
+	bool isHandleStandardLayout = std::is_standard_layout_v<internal::Handle>;
 
 	VSBLOG_INFO("Handle is standard layout: {}", isHandleStandardLayout);
 
@@ -210,7 +226,7 @@ int main()
 
 	//std::cin >> str;
 
-	vsb::DestructionCentral::Uninit();
+	DestructionCentral::Uninit();
 
 	return 0;
 }

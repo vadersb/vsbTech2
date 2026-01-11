@@ -10,14 +10,14 @@ namespace vsb
 	class ManagedObjectBase;
 	struct DefaultDestructionTag;
 
-	template<bool publicDestroy, typename TDestructionTag>
+	template<typename TDestructionTag>
 	class ManagedObject;
 
 
 	class DestructionCentral
 	{
 
-		template<bool publicDestroy, typename TDestructionTag>
+		template<typename TDestructionTag>
 		friend class vsb::ManagedObject;
 
 	public:
@@ -48,10 +48,7 @@ namespace vsb
 		{
 		public:
 
-			DestructionList()
-			{
-				s_DestructionLists.push_back(this);
-			}
+			DestructionList();
 
 
 			void Add(ManagedObjectBase* pObject);

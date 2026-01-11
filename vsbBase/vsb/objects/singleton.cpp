@@ -2,6 +2,9 @@
 
 #include "singleton.h"
 
+#include "vsb/log.h"
+#include "vsb/containers/container_utils.h"
+
 namespace vsb
 {
 	SingletonBase::SingletonBase(): Object(ObjectHint::Singleton)
@@ -12,13 +15,13 @@ namespace vsb
 	{
 		auto& singletonList = GetSingletonList();
 
-		//todo later: sort by priority
+		std::stable_sort(singletonList.begin(), singletonList.end(), std::greater{});
 
-		for (Index i = singletonList.GetSize() - 1; i >= 0; i--)
+		for (auto& entry : singletonList)
 		{
-			if (auto* pSingleton = singletonList[i].pSingleton.ValidateAndGet())
+			if (auto* pSingleton = entry.pSingleton.ValidateAndGet()) // NOLINT(*-delete-null-pointer)
 			{
-				delete pSingleton; // NOLINT(*-owning-memory)
+				delete pSingleton;
 			}
 			else
 			{
@@ -26,20 +29,20 @@ namespace vsb
 			}
 		}
 
-		singletonList.Clear();
+		singletonList.clear();
 	}
 
 
 	void SingletonBase::RegisterSingleton(const SafePtr<SingletonBase> &singletonPtr, int priority)
 	{
 		auto& singletonList = GetSingletonList();
-		singletonList.Add(SingletonEntry{ .pSingleton=singletonPtr, .priority=priority });
+		singletonList.push_back(SingletonEntry{ .pSingleton=singletonPtr, .priority=priority });
 	}
 
 
 	SingletonBase::SingletonList& SingletonBase::GetSingletonList()
 	{
-		static SingletonList singletonList;
-		return singletonList;
+		static TempVectorSetup<SingletonEntry, 2048> singletonListSetup;
+		return singletonListSetup.GetVector();
 	}
 }

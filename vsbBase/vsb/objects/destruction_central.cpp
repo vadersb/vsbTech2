@@ -45,6 +45,14 @@ namespace vsb
 	}
 
 
+	DestructionCentral::DestructionList::DestructionList()
+	{
+		s_DestructionLists.push_back(this);
+		m_ObjectsToDestroy.reserve(1024);
+		m_ObjectsToDestroyExtra.reserve(128);
+	}
+
+
 	void DestructionCentral::DestructionList::Add(ManagedObjectBase* pObject)
 	{
 		if (m_TargetMainList)

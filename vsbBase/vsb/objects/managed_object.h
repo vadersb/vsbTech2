@@ -4,7 +4,6 @@
 
 
 #include "object.h"
-#include "vsb/memory/allocation_strategy.h"
 #include "destruction_central.h"
 
 
@@ -53,18 +52,10 @@ namespace vsb
 	struct DefaultDestructionTag;
 
 
-	template<bool publicDestroy = true, typename TDestructionTag = DefaultDestructionTag>
+	template<typename TDestructionTag = DefaultDestructionTag>
 	class ManagedObject : public ManagedObjectBase
 	{
 		friend class DestructionCentral;
-
-	public:
-
-		void Destroy() requires publicDestroy
-		{
-			ScheduleForDestruction();
-		}
-
 
 	protected:
 
@@ -75,6 +66,8 @@ namespace vsb
 		{
 			DestructionCentral::Schedule<TDestructionTag>(this);
 		}
-
 	};
+
+
+	using ManagedObjectDefault = ManagedObject<>;
 }

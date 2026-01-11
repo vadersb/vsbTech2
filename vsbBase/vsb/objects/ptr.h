@@ -188,6 +188,9 @@ namespace vsb
 	{
 		return Ptr<TPtrType>(pointer);
 	}
+
+	static_assert(std::is_trivially_copyable_v<Ptr<Object>>);
+	static_assert(std::is_standard_layout_v<Ptr<Object>>);
 }
 
 

@@ -43,7 +43,7 @@ namespace vsb::internal
 		Handle& operator=(const Handle& other) = default;
 		Handle& operator=(Handle&& other) = default;
 
-		//custom move constructor was removed to preserve Handle as trivially copyable type
+		//custom move constructor was removed to preserve Handle as a trivially copyable type
 
 		Handle(const uint32_t index, const uint32_t generation) : m_index(index), m_generation(generation) // NOLINT(*-easily-swappable-parameters)
 		{}

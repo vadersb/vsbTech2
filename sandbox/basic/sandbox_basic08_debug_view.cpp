@@ -8,6 +8,8 @@
 #include "vsb/objects/safe_ptr.h"
 #include <typeinfo>
 
+using namespace vsb;
+
 namespace
 {
 	class BaseInterface
@@ -22,7 +24,7 @@ namespace
 	};
 
 
-	class Base : public vsb::Object, virtual public BaseInterface
+	class Base : public ScopedObject, virtual public BaseInterface
 	{
 	public:
 
@@ -34,7 +36,6 @@ namespace
 	protected:
 
 		explicit Base(int value) :
-		vsb::Object(vsb::ObjectHint::Scoped),
 		m_Value(value)
 		{}
 
@@ -110,12 +111,12 @@ int main()
 
 
 
-	vsb::SafePtr<Base> p1(&b1);
-	vsb::SafePtr<Base> p2(&b2);
-	vsb::SafePtr<Base> p3(&ex1);
-	vsb::SafePtr<Base> p4(&ex2);
+	SafePtr<Base> p1(&b1);
+	SafePtr<Base> p2(&b2);
+	SafePtr<Base> p3(&ex1);
+	SafePtr<Base> p4(&ex2);
 
-	std::vector<vsb::SafePtr<Base>> vec;
+	std::vector<SafePtr<Base>> vec;
 
 	vec.push_back(p1);
 	vec.push_back(p2);

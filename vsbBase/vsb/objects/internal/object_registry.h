@@ -4,10 +4,6 @@
 #include <cstddef>
 #include <stack>
 #include <vector>
-
-#include "vsb/containers/container_defs.h"
-#include "vsb/containers/fixed_array.h"
-#include "vsb/containers/inplace_stack.h"
 #include "vsb/objects/object.h"
 
 
@@ -21,7 +17,7 @@ namespace vsb
 
 namespace vsb::internal
 {
-	constexpr Count ObjectRegistryCapacity = 1024 * 8;
+	constexpr std::size_t ObjectRegistryCapacity = 1024 * 8;
 
 	class ObjectRegistryFinalizer
 	{
@@ -44,11 +40,11 @@ namespace vsb::internal
 
 		struct ActiveObjectStats
 		{
-			Count unspecifiedObjectsCount = 0;
-			Count staticObjectsCount = 0;
-			Count singletonObjectsCount = 0;
-			Count scopedObjectsCount = 0;
-			Count managedObjectsCount = 0;
+			std::size_t unspecifiedObjectsCount = 0;
+			std::size_t staticObjectsCount = 0;
+			std::size_t singletonObjectsCount = 0;
+			std::size_t scopedObjectsCount = 0;
+			std::size_t managedObjectsCount = 0;
 		};
 
 		//queries
