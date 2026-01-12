@@ -22,4 +22,6 @@ namespace params
 	constexpr int MinArraySize = 100;
 	constexpr int MaxArraySize = 1000;
 
+	constexpr float PeriodBetweenGens = 2.0f;
+
 }

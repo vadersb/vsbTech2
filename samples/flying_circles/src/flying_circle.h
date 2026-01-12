@@ -17,12 +17,37 @@ public:
 	FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles);
 
 
+
+	void Update(float dt);
+	void Destroy();
+
+	void Draw() const;
+
+	int GetOtherCirclesCount() const;
+
+
 	[[nodiscard]] bool IsDead() const
 	{
 		return m_age >= m_lifetime;
 	}
 
 private:
+
+	float CalculateAlpha() const;
+
+	float GetCurRadius() const;
+
+	float GetRadiusDeltaFromGarbageArray() const;
+
+	void UpdateOtherCirclesList();
+
+
+	static constexpr float FadeInDuration = 1.0f;
+	static constexpr float FadeOutDuration = 1.0f;
+
+	static constexpr int MinOtherCircles = 2;
+	static constexpr int MaxOtherCircles = 32;
+
 
 	float m_x;
 	float m_y;

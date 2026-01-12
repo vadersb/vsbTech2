@@ -32,10 +32,127 @@ FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, c
 	}
 
 
-	if (allCircles.empty() == false)
+	const int otherCirclesCount = std::min(static_cast<int>(allCircles.size()),
+	                                 GetRandomValue(MinOtherCircles, MaxOtherCircles));
+
+	for (int i = 0; i < otherCirclesCount; i++)
 	{
-		m_otherCircles.push_back(vsb::CreateSafePtr(allCircles[0]));
+		const int otherCircleIndex = GetRandomValue(0, static_cast<int>(allCircles.size()));
+
+		if (otherCircleIndex >= static_cast<int>(allCircles.size()))
+		{
+			continue;
+		}
+
+		FlyingCircle* otherCircle = allCircles[otherCircleIndex];
+		m_otherCircles.push_back(vsb::CreateSafePtr(otherCircle));
+	}
+}
+
+
+void FlyingCircle::Update(float dt)
+{
+	m_age += dt;
+	m_x += m_velX * dt;
+	m_y += m_velY * dt;
+
+	// Bounce off walls
+	if (m_x < 0 || m_x > params::WindowWidth)
+	{
+		m_velX = -m_velX;
+		m_x = std::clamp(m_x, 0.0f, static_cast<float>(params::WindowWidth));
+	}
+	if (m_y < 0 || m_y > params::WindowHeight)
+	{
+		m_velY = -m_velY;
+		m_y = std::clamp(m_y, 0.0f, static_cast<float>(params::WindowHeight));
 	}
 
 
+	UpdateOtherCirclesList();
+}
+
+
+void FlyingCircle::Destroy()
+{
+	ScheduleForDestruction();
+}
+
+
+void FlyingCircle::Draw() const
+{
+	float alpha = CalculateAlpha();
+	Color color(m_baseColor.r, m_baseColor.g, m_baseColor.b, (alpha * 255));
+	DrawCircle(static_cast<int>(m_x), static_cast<int>(m_y), GetCurRadius(), color);
+}
+
+
+int FlyingCircle::GetOtherCirclesCount() const
+{
+	return m_otherCircles.size();
+}
+
+
+float FlyingCircle::CalculateAlpha() const
+{
+	float timeUntilDeath = m_lifetime - m_age;
+
+	// Fade in: 0 to 1 over first second
+	if (m_age < FadeInDuration)
+	{
+		return m_age / FadeInDuration;
+	}
+
+	// Fade out: 1 to 0 over last second
+	if (timeUntilDeath < FadeOutDuration)
+	{
+		return timeUntilDeath / FadeOutDuration;
+	}
+
+	// Fully visible in between
+	return 1.0f;
+}
+
+
+float FlyingCircle::GetCurRadius() const
+{
+	return m_radius + static_cast<float>(m_otherCircles.size()) + GetRadiusDeltaFromGarbageArray();
+}
+
+
+float FlyingCircle::GetRadiusDeltaFromGarbageArray() const
+{
+	if (m_garbageArray.empty())
+	{
+		return -10.0f;
+	}
+
+	float result = m_garbageArray[0] % 2 == 0 ? +3.0f : -5.0f;
+
+	if (m_garbageArray.size() > 500)
+	{
+		result += 3.0f;
+	}
+
+	return result;
+}
+
+
+void FlyingCircle::UpdateOtherCirclesList()
+{
+	bool hasRemovals = false;
+
+	for (auto& otherCircle : m_otherCircles)
+	{
+		if (otherCircle.Validate() == false)
+		{
+			otherCircle.Reset();
+			hasRemovals = true;
+		}
+	}
+
+	if (hasRemovals)
+	{
+		std::erase_if(m_otherCircles, [](const auto &ptr) { return ptr.IsEmpty(); });
+	}
 }
