@@ -7,7 +7,7 @@
 #include "flying_circles_utils.h"
 #include "raylib.h"
 #include "vsb/objects/safe_ptr.h"
-
+#include "basic_memory_pool.h"
 
 FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles) :
 	m_x(fc_utils::GetRandomFloat(0.0f, params::WindowWidth)),
@@ -17,9 +17,9 @@ FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, c
 	m_radius(5.0f + fc_utils::GetRandomFloat01() * 15.0f),
 	m_lifetime(lifetime)
 {
-	m_baseColor.r = GetRandomValue(100, 256);
-	m_baseColor.g = GetRandomValue(100, 256);
-	m_baseColor.b = GetRandomValue(100, 256);
+	m_baseColor.r = static_cast<unsigned char>(GetRandomValue(100, 256));
+	m_baseColor.g = static_cast<unsigned char>(GetRandomValue(100, 256));
+	m_baseColor.b = static_cast<unsigned char>(GetRandomValue(100, 256));
 	m_baseColor.a = 255;
 
 	//allocate random garbage - no caching!
@@ -47,6 +47,18 @@ FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, c
 		FlyingCircle* otherCircle = allCircles[otherCircleIndex];
 		m_otherCircles.push_back(vsb::CreateSafePtr(otherCircle));
 	}
+}
+
+
+void* FlyingCircle::operator new(std::size_t size)
+{
+	return flying_circles::BasicMemoryPool::Allocate(size);
+}
+
+
+void FlyingCircle::operator delete(void* ptr, std::size_t size) noexcept
+{
+	flying_circles::BasicMemoryPool::Deallocate(ptr, size);
 }
 
 
@@ -82,14 +94,14 @@ void FlyingCircle::Destroy()
 void FlyingCircle::Draw() const
 {
 	float alpha = CalculateAlpha();
-	Color color(m_baseColor.r, m_baseColor.g, m_baseColor.b, (alpha * 255));
+	Color color(m_baseColor.r, m_baseColor.g, m_baseColor.b, static_cast<unsigned char>(alpha * 255));
 	DrawCircle(static_cast<int>(m_x), static_cast<int>(m_y), GetCurRadius(), color);
 }
 
 
 int FlyingCircle::GetOtherCirclesCount() const
 {
-	return m_otherCircles.size();
+	return static_cast<int>(m_otherCircles.size());
 }
 
 

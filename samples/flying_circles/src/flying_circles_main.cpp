@@ -8,6 +8,7 @@
 #include "raylib.h"
 #include "flying_circle.h"
 #include "flying_circles_utils.h"
+#include "basic_allocator.h"
 
 using namespace params;
 using namespace vsb;
@@ -26,7 +27,7 @@ namespace
 	bool s_AutoGenMode = false;
 	float s_TimeSinceLastGen = 0.0f;
 
-	std::vector<std::vector<int>> s_GarbageArrays {};
+	std::vector<flying_circles::PooledVector<int>> s_GarbageArrays {};
 	std::vector<FlyingCircle*> s_Circles {};
 
 	std::vector<FlyingCircle*> s_CurFrameCircles {};
@@ -183,7 +184,7 @@ namespace
 		//doing some garbage
 		const int garbageArraySize = GetRandomValue(5, 100);
 
-		std::vector garbageArray(garbageArraySize, 0);
+		flying_circles::PooledVector<int> garbageArray(garbageArraySize, 0);
 		s_GarbageArrays.push_back(std::move(garbageArray));
 
 		if (s_GarbageArrays.size() > 100)
@@ -247,6 +248,7 @@ namespace
 		
 		DrawFPS(10, 570);
 
+		DrawText(TextFormat("Pooled Objects: %llu", flying_circles::BasicMemoryPool::GetObjectsCount()), 10, 600, 20, BEIGE);
 
 		EndDrawing();
 	}

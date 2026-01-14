@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "flying_circles_settings.h"
 #include "raylib.h"
 #include "vsb/objects/managed_object.h"
-
+#include "basic_allocator.h"
 
 class FlyingCircle : public vsb::ManagedObjectDefault
 {
@@ -16,6 +15,9 @@ public:
 
 	FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles);
 
+	static void* operator new(std::size_t size);
+	static void operator delete(void* ptr, std::size_t size) noexcept;
+
 
 
 	void Update(float dt);
@@ -23,7 +25,7 @@ public:
 
 	void Draw() const;
 
-	int GetOtherCirclesCount() const;
+	[[nodiscard]] int GetOtherCirclesCount() const;
 
 
 	[[nodiscard]] bool IsDead() const
@@ -33,11 +35,11 @@ public:
 
 private:
 
-	float CalculateAlpha() const;
+	[[nodiscard]] float CalculateAlpha() const;
 
-	float GetCurRadius() const;
+	[[nodiscard]] float GetCurRadius() const;
 
-	float GetRadiusDeltaFromGarbageArray() const;
+	[[nodiscard]] float GetRadiusDeltaFromGarbageArray() const;
 
 	void UpdateOtherCirclesList();
 
@@ -61,7 +63,6 @@ private:
 	float m_lifetime;
 	float m_age {0.0f};
 
-	std::vector<int> m_garbageArray {};
-	std::vector<vsb::SafePtr<FlyingCircle>> m_otherCircles {};
-
+	flying_circles::PooledVector<int> m_garbageArray {};
+	flying_circles::PooledVector<vsb::SafePtr<FlyingCircle>> m_otherCircles {};
 };
