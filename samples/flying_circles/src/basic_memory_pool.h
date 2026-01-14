@@ -26,7 +26,7 @@ namespace flying_circles
 
 		static int64_t GetObjectsCount() {return s_ObjectsCount;}
 
-		static void* Allocate(size_t size)
+		static void* Allocate(const size_t size)
 		{
 			auto bucketIndex = GetBucketIndex(size);
 
@@ -48,7 +48,7 @@ namespace flying_circles
 		}
 
 
-		static void Deallocate(void* pElement, size_t size)
+		static void Deallocate(void* pElement, const size_t size)
 		{
 			auto bucketIndex = GetBucketIndex(size);
 
