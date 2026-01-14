@@ -338,6 +338,16 @@ namespace
 
 		// Update time bars: 1 pixel = 10 microseconds
 		// Draw all historical bars with low alpha (ghosted)
+		uint64_t maxUpdateTime = 0;
+		for (int i = 0; i < LastUpdateTimesCount; i++)
+		{
+			if (s_UpdateTimesHistory[i] > maxUpdateTime)
+				maxUpdateTime = s_UpdateTimesHistory[i];
+		}
+		int maxBarWidth = (int)(maxUpdateTime / 10);
+		constexpr Color maxColor(255, 0, 0, 80);
+		DrawRectangle(10, 70, maxBarWidth, 16, maxColor);
+
 		for (int i = 0; i < LastUpdateTimesCount; i++)
 		{
 			constexpr Color ghostColor = {135, 206, 235, 25};
