@@ -60,8 +60,10 @@ namespace flying_circles
 
 			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [&]<std::size_t index>()
 			{
-				auto& bucket = GetBucket<index>();
-				bucket.Deallocate(pElement);
+				if (!Bucket<index>::WasShutDown())
+				{
+					GetBucket<index>().Deallocate(pElement);
+				}
 			});
 
 			s_ObjectsCount--;
@@ -108,6 +110,15 @@ namespace flying_circles
 				storage.reserve(BucketElementsCount);
 				m_freeElements = std::stack(std::move(storage));
 			}
+
+			~Bucket()
+			{
+				s_WasShutDown = true;
+			}
+
+
+			static bool WasShutDown() {return s_WasShutDown;}
+
 
 			void* Allocate()
 			{
@@ -159,6 +170,7 @@ namespace flying_circles
 
 		private:
 
+			inline static bool s_WasShutDown {false};
 			int m_pagesUsed {0};
 			std::stack<void*, std::vector<void*>> m_freeElements {};
 		};
