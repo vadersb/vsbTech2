@@ -24,6 +24,7 @@ public:
 	void Destroy();
 
 	void Draw() const;
+	void DrawQuad() const;
 
 	[[nodiscard]] int GetOtherCirclesCount() const;
 

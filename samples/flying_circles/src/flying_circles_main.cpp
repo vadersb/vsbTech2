@@ -9,6 +9,8 @@
 #include "flying_circle.h"
 #include "flying_circles_utils.h"
 #include "basic_allocator.h"
+#include "flying_circles_shaders.h"
+#include "rlgl.h"
 
 using namespace params;
 using namespace vsb;
@@ -16,6 +18,12 @@ using namespace fc_utils;
 
 namespace
 {
+	struct SortableCircle
+	{
+		FlyingCircle* pCircle;
+		int originalIndex;
+	};
+
 	void update();
 	void render();
 
@@ -30,7 +38,7 @@ namespace
 	std::vector<flying_circles::PooledVector<int>> s_GarbageArrays {};
 	std::vector<FlyingCircle*> s_Circles {};
 
-	std::vector<FlyingCircle*> s_CurFrameCircles {};
+	std::vector<SortableCircle> s_CurFrameCircles {};
 	uint64_t s_CurFrameMaxCircleCount = 0;
 	uint64_t s_CurFrameMaxValueCount = 0;
 
@@ -43,6 +51,12 @@ namespace
 	std::array<uint64_t, LastUpdateTimesCount> s_UpdateTimesHistory {};
 	int s_UpdateTimesIndex = 0;
 
+	uint64_t s_AutoGenBaseCount = 1000;
+	uint64_t s_AutoGenRange = 1500;
+
+
+	Shader s_CircleShader;
+
 
 	void add_circle()
 	{
@@ -53,6 +67,68 @@ namespace
 		auto* pCircle = new FlyingCircle(lifetime, MinArraySize, MaxArraySize, s_Circles);
 		s_Circles.push_back(pCircle);
 		s_TotalObjectsCreated++;
+	}
+
+
+	void process_inputs()
+	{
+		if (IsKeyPressed(KEY_A))
+		{
+			s_AutoGenMode = !s_AutoGenMode;
+		}
+
+		// Adjust auto gen base count with Left/Right arrows
+		if (IsKeyPressed(KEY_LEFT))
+		{
+			s_AutoGenBaseCount = std::max(static_cast<uint64_t>(0), s_AutoGenBaseCount - 100);
+		}
+		if (IsKeyPressed(KEY_RIGHT))
+		{
+			s_AutoGenBaseCount += 100;
+		}
+
+		// Adjust auto gen range with Up/Down arrows
+		if (IsKeyPressed(KEY_UP))
+		{
+			s_AutoGenRange += 100;
+		}
+		if (IsKeyPressed(KEY_DOWN))
+		{
+			s_AutoGenRange = std::max(static_cast<uint64_t>(100), s_AutoGenRange - 100);
+		}
+
+		// Toggle slow generation rate
+		if (IsKeyPressed(KEY_X))
+		{
+			s_SlowGenRate = !s_SlowGenRate;
+			s_TimeSinceLastGen = 0.0f;
+		}
+
+		// Generate a pack of objects instantly
+		if (IsKeyPressed(KEY_Q))
+		{
+			for (int i = 0; i < ManualObjectPackGenCount; i++)
+			{
+				add_circle();
+			}
+		}
+	}
+
+
+	void process_auto_gen()
+	{
+		size_t autoGenMin = s_AutoGenBaseCount;
+		size_t autoGenMax = s_AutoGenBaseCount + s_AutoGenRange;
+
+		if (s_Circles.size() <= autoGenMin && s_SlowGenRate)
+		{
+			s_SlowGenRate = false;
+		}
+
+		if (s_Circles.size() >= autoGenMax)
+		{
+			s_SlowGenRate = true;
+		}
 	}
 
 
@@ -115,18 +191,27 @@ namespace
 	void per_frame_circles_processing()
 	{
 		//Per frame circles processing
-		for (auto* circle: s_Circles)
+		for (auto i = 0; i < s_Circles.size(); i++)
 		{
+			auto* circle = s_Circles[i];
+
 			if (circle->GetOtherCirclesCount() % 2 == 1) continue;
 
-			s_CurFrameCircles.push_back(circle);
+			s_CurFrameCircles.push_back({circle, i});
 		}
 
-		std::stable_sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end(),
-		                 [](const FlyingCircle* a, const FlyingCircle* b)
+		std::sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end(),
+		                 [](const SortableCircle& a, const SortableCircle& b)
 		                 {
-			                 // Add your comparison logic here based on how FlyingCircle should be sorted
-			                 return a->GetOtherCirclesCount() < b->GetOtherCirclesCount(); // Example comparison
+		                 	const auto countA = a.pCircle->GetOtherCirclesCount();
+		                 	const auto countB = b.pCircle->GetOtherCirclesCount();
+
+		                 	if (countA != countB)
+		                 	{
+		                 		return countA < countB;
+		                 	}
+
+		                 	return a.originalIndex < b.originalIndex;
 		                 });
 
 		s_CurFrameCurCircleCount = s_CurFrameCircles.size();
@@ -135,9 +220,9 @@ namespace
 
 		s_CurFrameCurValueCount = 0;
 
-		for (auto* circle: s_CurFrameCircles)
+		for (auto& entry: s_CurFrameCircles)
 		{
-			s_CurFrameCurValueCount += circle->GetOtherCirclesCount();
+			s_CurFrameCurValueCount += entry.pCircle->GetOtherCirclesCount();
 		}
 
 		s_CurFrameMaxValueCount = std::max(s_CurFrameMaxValueCount, s_CurFrameCurValueCount);
@@ -153,6 +238,9 @@ int main()
 
 	SetConfigFlags(FLAG_VSYNC_HINT);
 	InitWindow(WindowWidth, WindowHeight, "Flying Circles");
+	SetTargetFPS(0);
+
+	s_CircleShader = LoadShaderFromMemory(flying_circles::CircleVertexShader, flying_circles::CircleFragmentShader);
 
 	s_Circles.reserve(32 * 1024);
 	s_CurFrameCircles.reserve(s_Circles.capacity());
@@ -174,6 +262,7 @@ int main()
 		DestructionCentral::ProcessDefault();
 	}
 
+	UnloadShader(s_CircleShader);
 	CloseWindow();
 
 	log::Uninit();
@@ -187,8 +276,12 @@ namespace
 		float const dt = GetFrameTime();
 		s_TimeSinceStart += dt;
 
+		process_inputs();
 
-
+		if (s_AutoGenMode)
+		{
+			process_auto_gen();
+		}
 
 		// Spawn new circles
 		process_circles_gen(dt);
@@ -222,10 +315,17 @@ namespace
 		BeginDrawing();
 		ClearBackground(BLACK);
 
+		BeginShaderMode(s_CircleShader);
+
+		rlBegin(RL_QUADS);
+
 		for (const auto* pCircle : s_Circles)
 		{
-			pCircle->Draw();
+			pCircle->DrawQuad();
 		}
+
+		rlEnd();
+		EndShaderMode();
 
 		//---
 		//UI OVERLAY
@@ -234,6 +334,7 @@ namespace
 		DrawText(TextFormat("Total Objects Created: %llu", s_TotalObjectsCreated), 10, 10, 20, WHITE);
 		DrawText(TextFormat("Objects: %zu", s_Circles.size()), 10, 40, 30, WHITE);
 
+		DrawText(TextFormat("Update time (ms): %i", s_UpdateTimesHistory[s_UpdateTimesIndex] / 1000), 10, 120, 20, WHITE);
 
 		// Update time bars: 1 pixel = 10 microseconds
 		// Draw all historical bars with low alpha (ghosted)
@@ -247,6 +348,16 @@ namespace
 		const int updateBarWidth = static_cast<int>(s_LastUpdateMicros / 10);
 		DrawRectangle(10, 70, updateBarWidth, 16, SKYBLUE);
 
+		DrawText(TextFormat("[X] Slow Gen Rate: %s", s_SlowGenRate ? "ON" : "OFF"), 10, 350, 20,
+		         s_SlowGenRate ? ORANGE : GREEN);
+		DrawText(TextFormat("[Q] Generate %d objects", ManualObjectPackGenCount), 10, 380, 20, GREEN);
+
+		int autoGenMin = static_cast<int>(s_AutoGenBaseCount);
+		int autoGenMax = static_cast<int>(s_AutoGenBaseCount + s_AutoGenRange);
+		DrawText(TextFormat("[A] Auto Gen (%d - %d): %s", autoGenMin, autoGenMax, s_AutoGenMode ? "ON" : "OFF"), 10,
+		         410, 20,
+		         s_AutoGenMode ? ORANGE : GREEN);
+		DrawText("[LR] Base Count  [UD] Range", 10, 440, 20, GRAY);
 
 		//DrawText(TextFormat("Uptime: %s", FormatTimeHMS(s_TimeSinceStart)), 10, 470, 20, BEIGE);
 

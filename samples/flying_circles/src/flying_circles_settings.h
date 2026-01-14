@@ -24,4 +24,6 @@ namespace params
 
 	constexpr float PeriodBetweenGens = 2.0f;
 
+	constexpr int ManualObjectPackGenCount = 1000;
+
 }

@@ -8,6 +8,8 @@
 #include "raylib.h"
 #include "vsb/objects/safe_ptr.h"
 #include "basic_memory_pool.h"
+#include "../../../cmake-build-debug-visual-studio/_deps/raylib-src/src/rlgl.h"
+
 
 FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles) :
 	m_x(fc_utils::GetRandomFloat(0.0f, params::WindowWidth)),
@@ -96,6 +98,26 @@ void FlyingCircle::Draw() const
 	float alpha = CalculateAlpha();
 	Color color(m_baseColor.r, m_baseColor.g, m_baseColor.b, static_cast<unsigned char>(alpha * 255));
 	DrawCircle(static_cast<int>(m_x), static_cast<int>(m_y), GetCurRadius(), color);
+}
+
+
+void FlyingCircle::DrawQuad() const
+{
+	if (IsDead())
+	{
+		return;
+	}
+
+	const float alpha = CalculateAlpha();
+	const Color color(m_baseColor.r, m_baseColor.g, m_baseColor.b, static_cast<unsigned char>(alpha * 255));
+
+	rlColor4ub(color.r, color.g, color.b, color.a);
+	const float r = GetCurRadius();
+
+	rlTexCoord2f(0.0f, 1.0f); rlVertex2f(m_x - r, m_y + r); //bottom-left
+	rlTexCoord2f(1.0f, 1.0f); rlVertex2f(m_x + r, m_y + r); //bottom-right
+	rlTexCoord2f(1.0f, 0.0f); rlVertex2f(m_x + r, m_y - r); //top-right
+	rlTexCoord2f(0.0f, 0.0f); rlVertex2f(m_x - r, m_y - r); //top-left
 }
 
 
