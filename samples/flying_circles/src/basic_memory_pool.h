@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <cstdlib>
 #include <array>
 #include <stack>
 #include <vector>
@@ -37,7 +38,7 @@ namespace flying_circles
 
 			void* pResult;
 
-			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [&]<std::size_t index>()
+			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [&pResult]<std::size_t index>()
 			{
 				auto& bucket = GetBucket<index>();
 				pResult = bucket.Allocate();
@@ -58,7 +59,7 @@ namespace flying_circles
 				return;
 			}
 
-			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [&]<std::size_t index>()
+			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [pElement]<std::size_t index>()
 			{
 				if (!Bucket<index>::WasShutDown())
 				{
@@ -71,8 +72,10 @@ namespace flying_circles
 
 	private:
 
-		static constexpr std::array s_BucketElementSizes {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
-		static constexpr std::array s_BucketElementsCounts {64 * 1024, 64 * 1024, 64 * 1024, 32 * 1024, 16 * 1024, 1024, 1024, 1024, 512, 256, 128, 64};
+		static constexpr std::array s_BucketElementSizes {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 16384 * 2, 16384 * 2};
+		static constexpr std::array s_BucketElementsCounts {64 * 1024, 64 * 1024, 64 * 1024, 32 * 1024, 16 * 1024, 8 * 1024, 8 * 1024, 8 * 1024, 4 * 1024, 4 * 1024, 256, 128, 64, 64};
+
+		static_assert(s_BucketElementSizes.size() == s_BucketElementsCounts.size(), "sizes should match!");
 
 		static inline int64_t s_ObjectsCount {};
 
@@ -99,7 +102,7 @@ namespace flying_circles
 
 			using PageElement = std::byte[BucketElementSize];
 
-			using Page = std::array<PageElement, BucketElementsCount>;
+			using Page = PageElement[BucketElementsCount];
 
 		public:
 
@@ -141,14 +144,13 @@ namespace flying_circles
 
 			void AddPage()
 			{
-				Page* pPage;
-
 				VSBLOG_INFO("Adding pool page: {} (element size: {})", m_pagesUsed, BucketElementSize);
 
-				TemplateIndexedDispatch<128>(m_pagesUsed, [&pPage]<std::size_t index>()
-				{
-					pPage = &GetPage<index>();
-				});
+				// Heap-allocate the page with proper alignment
+				auto* pPage = static_cast<Page*>(::operator new(sizeof(Page), std::align_val_t{alignof(std::max_align_t)}));
+
+				// Store for potential cleanup (optional, since we're not freeing)
+				GetAllocatedPages().push_back(pPage);
 
 				for (auto& element : *pPage)
 				{
@@ -158,17 +160,14 @@ namespace flying_circles
 				m_pagesUsed++;
 			}
 
-			template<int index>
-			static Page& GetPage()
-			{
-				static_assert(index >= 0, "template index must be non-negative");
-				alignas(std::max_align_t) static Page page;
-				return page;
-			}
-
-
-
 		private:
+
+			// SIOF-safe storage for allocated pages
+			static std::vector<Page*>& GetAllocatedPages()
+			{
+				static std::vector<Page*> pages;
+				return pages;
+			}
 
 			inline static bool s_WasShutDown {false};
 			int m_pagesUsed {0};

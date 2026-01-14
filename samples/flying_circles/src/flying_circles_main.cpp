@@ -88,6 +88,8 @@ namespace
 	{
 		const int count = static_cast<int>(s_Circles.size());
 
+		bool hasRemovals = false;
+
 		for (int i = count - 1; i >= 0; i--)
 		{
 			auto* pCircle = s_Circles[i];
@@ -96,8 +98,15 @@ namespace
 			if (pCircle->IsDead())
 			{
 				pCircle->Destroy();
-				s_Circles.erase(s_Circles.begin() + i);
+				s_Circles[i] = nullptr;
+				hasRemovals = true;
+				//s_Circles.erase(s_Circles.begin() + i);
 			}
+		}
+
+		if (hasRemovals)
+		{
+			std::erase(s_Circles, nullptr);
 		}
 
 	}
@@ -144,6 +153,10 @@ int main()
 
 	SetConfigFlags(FLAG_VSYNC_HINT);
 	InitWindow(WindowWidth, WindowHeight, "Flying Circles");
+
+	s_Circles.reserve(32 * 1024);
+	s_CurFrameCircles.reserve(s_Circles.capacity());
+	s_GarbageArrays.reserve(512);
 
 	while (!WindowShouldClose())
 	{
