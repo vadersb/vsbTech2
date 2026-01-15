@@ -15,8 +15,8 @@ public:
 
 	FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles);
 
-	static void* operator new(std::size_t size);
-	static void operator delete(void* ptr, std::size_t size) noexcept;
+	void* operator new(std::size_t size);
+	void operator delete(void* ptr, std::size_t size) noexcept;
 
 
 

@@ -18,11 +18,8 @@ using namespace fc_utils;
 
 namespace
 {
-	struct SortableCircle
-	{
-		FlyingCircle* pCircle;
-		int originalIndex;
-	};
+	using SortableCircle = fc_utils::PointerWithIndex<FlyingCircle>;
+
 
 	void update();
 	void render();
@@ -54,6 +51,7 @@ namespace
 	uint64_t s_AutoGenBaseCount = 1000;
 	uint64_t s_AutoGenRange = 1500;
 
+	bool s_UseTemplatedSort = false;
 
 	Shader s_CircleShader;
 
@@ -111,6 +109,11 @@ namespace
 			{
 				add_circle();
 			}
+		}
+
+		if (IsKeyPressed(KEY_S))
+		{
+			s_UseTemplatedSort = !s_UseTemplatedSort;
 		}
 	}
 
@@ -186,6 +189,17 @@ namespace
 		}
 
 	}
+
+
+	void remove_all_circles()
+	{
+		for (auto* pCircle : s_Circles)
+		{
+			pCircle->Destroy();
+		}
+
+		s_Circles.clear();
+	}
 	
 	
 	void per_frame_circles_processing()
@@ -200,19 +214,26 @@ namespace
 			s_CurFrameCircles.push_back({circle, i});
 		}
 
-		std::sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end(),
-		                 [](const SortableCircle& a, const SortableCircle& b)
-		                 {
-		                 	const auto countA = a.pCircle->GetOtherCirclesCount();
-		                 	const auto countB = b.pCircle->GetOtherCirclesCount();
+		if (s_UseTemplatedSort)
+		{
+			//std::sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end());
+		}
+		else
+		{
+			std::sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end(),
+						 [](const SortableCircle& a, const SortableCircle& b)
+						 {
+							 const auto countA = a.pPointer->GetOtherCirclesCount();
+							 const auto countB = b.pPointer->GetOtherCirclesCount();
 
-		                 	if (countA != countB)
-		                 	{
-		                 		return countA < countB;
-		                 	}
+							 if (countA != countB)
+							 {
+								 return countA < countB;
+							 }
 
-		                 	return a.originalIndex < b.originalIndex;
-		                 });
+							 return a.index < b.index;
+						 });
+		}
 
 		s_CurFrameCurCircleCount = s_CurFrameCircles.size();
 
@@ -222,7 +243,7 @@ namespace
 
 		for (auto& entry: s_CurFrameCircles)
 		{
-			s_CurFrameCurValueCount += entry.pCircle->GetOtherCirclesCount();
+			s_CurFrameCurValueCount += entry.pPointer->GetOtherCirclesCount();
 		}
 
 		s_CurFrameMaxValueCount = std::max(s_CurFrameMaxValueCount, s_CurFrameCurValueCount);
@@ -262,8 +283,12 @@ int main()
 		DestructionCentral::ProcessDefault();
 	}
 
+	remove_all_circles();
+
 	UnloadShader(s_CircleShader);
 	CloseWindow();
+
+	DestructionCentral::ProcessDefault();
 
 	log::Uninit();
 }
@@ -308,6 +333,17 @@ namespace
 		//Per frame circles processing
 		per_frame_circles_processing();
 	}
+
+
+	const char* FormatTimeHMS(float timeSinceStart)
+	{
+		int totalSeconds = static_cast<int>(timeSinceStart);
+		int hours = totalSeconds / 3600;
+		int minutes = (totalSeconds % 3600) / 60;
+		int seconds = totalSeconds % 60;
+		return TextFormat("%d:%02d:%02d", hours, minutes, seconds);
+	}
+
 
 
 	void render()
@@ -358,6 +394,8 @@ namespace
 		const int updateBarWidth = static_cast<int>(s_LastUpdateMicros / 10);
 		DrawRectangle(10, 70, updateBarWidth, 16, SKYBLUE);
 
+		DrawText(TextFormat("[S] Use Templated Sort: %s", s_UseTemplatedSort ? "ON" : "OFF"), 10, 290, 20, GREEN);
+
 		DrawText(TextFormat("[X] Slow Gen Rate: %s", s_SlowGenRate ? "ON" : "OFF"), 10, 350, 20,
 		         s_SlowGenRate ? ORANGE : GREEN);
 		DrawText(TextFormat("[Q] Generate %d objects", ManualObjectPackGenCount), 10, 380, 20, GREEN);
@@ -369,7 +407,7 @@ namespace
 		         s_AutoGenMode ? ORANGE : GREEN);
 		DrawText("[LR] Base Count  [UD] Range", 10, 440, 20, GRAY);
 
-		//DrawText(TextFormat("Uptime: %s", FormatTimeHMS(s_TimeSinceStart)), 10, 470, 20, BEIGE);
+		DrawText(TextFormat("Uptime: %s", FormatTimeHMS(s_TimeSinceStart)), 10, 470, 20, BEIGE);
 
 		Color fadedColor = BEIGE;
 		fadedColor.a = 55;
