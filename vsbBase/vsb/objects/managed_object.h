@@ -11,7 +11,7 @@ namespace vsb
 {
 	class DestructionCentral;
 
-	class ManagedObjectBase : public Object
+	class ManagedObject : public Object
 	{
 		friend class vsb::DestructionCentral;
 
@@ -21,10 +21,10 @@ namespace vsb
 
 	protected:
 
-		ManagedObjectBase() : Object(ObjectHint::Managed)
+		ManagedObject() : Object(ObjectHint::Managed)
 		{}
 
-		~ManagedObjectBase() override = default;
+		~ManagedObject() override = default;
 
 
 		void ScheduleForDestruction()
@@ -41,33 +41,21 @@ namespace vsb
 		}
 
 		virtual void OnScheduledForDestruction() {}
-		virtual void PassToDestructionCentral() = 0;
+
+		virtual void PassToDestructionCentral()
+		{
+			ScheduleForDestructionInternal<DefaultDestructionTag>();
+		}
+
+		template<typename TDestructionTag>
+		void ScheduleForDestructionInternal()
+		{
+			DestructionCentral::Schedule<TDestructionTag>(this);
+		}
 
 	private:
 
 		bool m_scheduledForDestruction = false;
 	};
 
-
-	struct DefaultDestructionTag;
-
-
-	template<typename TDestructionTag = DefaultDestructionTag>
-	class ManagedObject : public ManagedObjectBase
-	{
-		friend class DestructionCentral;
-
-	protected:
-
-		ManagedObject() = default;
-		~ManagedObject() override = default;
-
-		void PassToDestructionCentral() final
-		{
-			DestructionCentral::Schedule<TDestructionTag>(this);
-		}
-	};
-
-
-	using ManagedObjectDefault = ManagedObject<>;
 }

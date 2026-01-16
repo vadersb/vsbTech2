@@ -7,17 +7,13 @@
 
 namespace vsb
 {
-	class ManagedObjectBase;
 	struct DefaultDestructionTag;
-
-	template<typename TDestructionTag>
 	class ManagedObject;
 
 
 	class DestructionCentral
 	{
 
-		template<typename TDestructionTag>
 		friend class vsb::ManagedObject;
 
 	public:
@@ -41,7 +37,7 @@ namespace vsb
 
 		static void ProcessAll();
 
-		static void DestroyObject(ManagedObjectBase* pObject);
+		static void DestroyObject(ManagedObject* pObject);
 
 
 		class DestructionList
@@ -51,7 +47,7 @@ namespace vsb
 			DestructionList();
 
 
-			void Add(ManagedObjectBase* pObject);
+			void Add(ManagedObject* pObject);
 			bool Process();
 
 
@@ -68,13 +64,13 @@ namespace vsb
 
 			bool m_IsProcessing = false;
 			bool m_TargetMainList = true;
-			std::vector<ManagedObjectBase*> m_ObjectsToDestroy {};
-			std::vector<ManagedObjectBase*> m_ObjectsToDestroyExtra {};
+			std::vector<ManagedObject*> m_ObjectsToDestroy {};
+			std::vector<ManagedObject*> m_ObjectsToDestroyExtra {};
 		};
 
 
 		template<typename TDestructionTag>
-		static void Schedule(ManagedObjectBase* pObject)
+		static void Schedule(ManagedObject* pObject)
 		{
 			auto& destructionList = DestructionList::GetInstance<TDestructionTag>();
 			destructionList.Add(pObject);

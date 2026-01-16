@@ -4,7 +4,6 @@
 #include <catch2/catch_all.hpp>
 
 #include "vsb/log.h"
-#include "vsb/memory/memory.h"
 #include "vsb/objects/destruction_central.h"
 #include "vsb/objects/singleton.h"
 #include "vsb/objects/internal/object_registry.h"
@@ -14,7 +13,6 @@ int main(int argc, char* argv[])
     // === SETUP ===
     vsb::log::InitForTests();
     VSBLOG_INFO("Global test setup init");
-    vsb::memory::AllocationSystem::Init();
 
     // Run all Catch2 tests
     int const result = Catch::Session().run(argc, argv);
@@ -29,7 +27,6 @@ int main(int argc, char* argv[])
         vsb::internal::ObjectRegistryFinalizer const finalizer;
     }
 
-    vsb::memory::AllocationSystem::Uninit();
     vsb::log::Uninit();
 
     return result;

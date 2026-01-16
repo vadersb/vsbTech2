@@ -8,9 +8,9 @@
 #include "raylib.h"
 #include "flying_circle.h"
 #include "flying_circles_utils.h"
-#include "basic_allocator.h"
 #include "flying_circles_shaders.h"
 #include "rlgl.h"
+#include <algorithm>
 
 using namespace params;
 using namespace vsb;
@@ -32,7 +32,7 @@ namespace
 	bool s_AutoGenMode = false;
 	float s_TimeSinceLastGen = 0.0f;
 
-	std::vector<flying_circles::PooledVector<int>> s_GarbageArrays {};
+	std::vector<vsb::vector<int>> s_GarbageArrays {};
 	std::vector<FlyingCircle*> s_Circles {};
 
 	std::vector<SortableCircle> s_CurFrameCircles {};
@@ -205,7 +205,7 @@ namespace
 	void per_frame_circles_processing()
 	{
 		//Per frame circles processing
-		for (auto i = 0; i < s_Circles.size(); i++)
+		for (int i = 0; i < static_cast<int>(s_Circles.size()); i++)
 		{
 			auto* circle = s_Circles[i];
 
@@ -274,7 +274,7 @@ int main()
 		auto updateEndTime = std::chrono::high_resolution_clock::now();
 		s_LastUpdateMicros = std::chrono::duration_cast<std::chrono::microseconds>(updateEndTime - updateStartTime).count();
 
-		// Store in circular buffer
+		// Store in a circular buffer
 		s_UpdateTimesHistory[s_UpdateTimesIndex] = s_LastUpdateMicros;
 		s_UpdateTimesIndex = (s_UpdateTimesIndex + 1) % LastUpdateTimesCount;
 
@@ -288,7 +288,7 @@ int main()
 	UnloadShader(s_CircleShader);
 	CloseWindow();
 
-	DestructionCentral::ProcessDefault();
+	DestructionCentral::Uninit();
 
 	log::Uninit();
 }
@@ -315,7 +315,7 @@ namespace
 		//doing some garbage
 		const int garbageArraySize = GetRandomValue(5, 100);
 
-		flying_circles::PooledVector<int> garbageArray(garbageArraySize, 0);
+		vsb::vector<int> garbageArray(garbageArraySize, 0);
 		s_GarbageArrays.push_back(std::move(garbageArray));
 
 		if (s_GarbageArrays.size() > 100)
@@ -380,7 +380,7 @@ namespace
 			if (s_UpdateTimesHistory[i] > maxUpdateTime)
 				maxUpdateTime = s_UpdateTimesHistory[i];
 		}
-		int maxBarWidth = (int)(maxUpdateTime / 10);
+		int maxBarWidth = static_cast<int>(maxUpdateTime / 10);
 		constexpr Color maxColor(255, 0, 0, 80);
 		DrawRectangle(10, 70, maxBarWidth, 16, maxColor);
 
@@ -390,7 +390,7 @@ namespace
 			const int barWidth = static_cast<int>(s_UpdateTimesHistory[i] / 10);
 			DrawRectangle(10, 70, barWidth, 16, ghostColor);
 		}
-		// Draw current bar on top with full color
+		// Draw the current bar on top with full color
 		const int updateBarWidth = static_cast<int>(s_LastUpdateMicros / 10);
 		DrawRectangle(10, 70, updateBarWidth, 16, SKYBLUE);
 
@@ -420,7 +420,7 @@ namespace
 		
 		DrawFPS(10, 570);
 
-		DrawText(TextFormat("Pooled Objects: %llu", flying_circles::BasicMemoryPool::GetObjectsCount()), 10, 600, 20, BEIGE);
+		DrawText(TextFormat("Pooled Objects: %llu", vsb::memory::SingleThreadedPool::GetObjectsCount()), 10, 600, 20, BEIGE);
 
 		EndDrawing();
 	}

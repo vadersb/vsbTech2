@@ -6,9 +6,10 @@
 
 #include "raylib.h"
 #include "vsb/objects/managed_object.h"
-#include "basic_allocator.h"
+#include "vsb/objects/safe_ptr.h"
+#include "vsb/containers/vsb_vector.h"
 
-class FlyingCircle : public vsb::ManagedObjectDefault
+class FlyingCircle : public vsb::ManagedObject
 {
 public:
 
@@ -64,6 +65,6 @@ private:
 	float m_lifetime;
 	float m_age {0.0f};
 
-	flying_circles::PooledVector<int> m_garbageArray {};
-	flying_circles::PooledVector<vsb::SafePtr<FlyingCircle>> m_otherCircles {};
+	vsb::vector<int> m_garbageArray {};
+	vsb::vector<vsb::SafePtr<FlyingCircle>> m_otherCircles {};
 };

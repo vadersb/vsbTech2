@@ -78,7 +78,6 @@ namespace vsb::internal
 			ObjectHint hint = ObjectHint::Unspecified;
 		};
 
-		//FixedArray<Entry, ObjectRegistryCapacity> m_entries {};
 		std::vector<Entry> m_entries {ObjectRegistryCapacity, Entry()};
 		std::stack<uint32_t, std::vector<uint32_t>> m_freeIndices {};
 

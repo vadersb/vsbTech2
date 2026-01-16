@@ -1,31 +1,25 @@
 //
-// Created by Alexander on 14.01.2026.
+// Created by Alexander on 17.01.2026.
 //
 
 #pragma once
-#include <cstdlib>
-#include <array>
-#include <stack>
+
+#include <cstdint>
 #include <vector>
+#include <stack>
+#include <array>
+#include <algorithm>
 #include "vsb/log.h"
+#include "vsb/utils.h"
 
-namespace flying_circles
+
+namespace vsb::memory
 {
-	template<int MaxN, typename F>
-	constexpr void TemplateIndexedDispatch(int n, F&& func)
-	{
-		[&]<std::size_t... Is>(std::index_sequence<Is...>)
-		{
-			(void)((Is == n ? (func.template operator()<Is>(), true) : false) || ...);
-		}(std::make_index_sequence<MaxN>{});
-	}
-
-
-	class BasicMemoryPool
+	class SingleThreadedPool
 	{
 	public:
 
-		static int64_t GetObjectsCount() {return s_ObjectsCount;}
+		static std::int64_t GetObjectsCount() {return s_ObjectsCount;}
 
 		static void* Allocate(const size_t size)
 		{
@@ -72,8 +66,8 @@ namespace flying_circles
 
 	private:
 
-		static constexpr std::array s_BucketElementSizes {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 16384 * 2, 16384 * 2};
-		static constexpr std::array s_BucketElementsCounts {64 * 1024, 64 * 1024, 64 * 1024, 32 * 1024, 16 * 1024, 8 * 1024, 8 * 1024, 8 * 1024, 4 * 1024, 4 * 1024, 256, 128, 64, 64};
+		static constexpr std::array s_BucketElementSizes {8ul, 16ul, 32ul, 64ul, 128ul, 256ul, 512ul, 1024ul, 2048ul, 4096ul, 8192ul, 16384ul, 16384ul * 2ul, 16384ul * 2ul};
+		static constexpr std::array s_BucketElementsCounts {64ul * 1024, 64ul * 1024, 64ul * 1024, 32ul * 1024, 16ul * 1024, 8ul * 1024, 8ul * 1024, 8ul * 1024, 4ul * 1024, 4ul * 1024, 256ul, 128ul, 64ul, 64ul};
 
 		static_assert(s_BucketElementSizes.size() == s_BucketElementsCounts.size(), "sizes should match!");
 
@@ -81,7 +75,9 @@ namespace flying_circles
 
 		static int GetBucketIndex(const size_t size)
 		{
-			for (int i = 0; i < s_BucketElementSizes.size(); i++)
+			constexpr int BucketsCount = static_cast<const int>(s_BucketElementSizes.size());
+
+			for (int i = 0; i < BucketsCount; i++)
 			{
 				if (size <= s_BucketElementSizes[i])
 				{
@@ -96,13 +92,16 @@ namespace flying_circles
 		template<int bucketIndex>
 		class Bucket
 		{
-			constexpr static int BucketElementSize = s_BucketElementSizes[bucketIndex];
-			constexpr static int BucketElementsCount = s_BucketElementsCounts[bucketIndex];
-			constexpr static int BucketSize = BucketElementSize * BucketElementsCount;
+			constexpr static size_t BucketElementSize = s_BucketElementSizes[bucketIndex];
+			constexpr static size_t BucketElementsCount = s_BucketElementsCounts[bucketIndex];
+			constexpr static size_t BucketSize = BucketElementSize * BucketElementsCount;
 
 			using PageElement = std::byte[BucketElementSize];
 
-			using Page = PageElement[BucketElementsCount];
+			struct Page
+			{
+				PageElement data[BucketElementsCount];
+			};
 
 		public:
 
@@ -152,7 +151,7 @@ namespace flying_circles
 				// Store for potential cleanup (optional, since we're not freeing)
 				GetAllocatedPages().push_back(pPage);
 
-				for (auto& element : *pPage)
+				for (auto& element : pPage->data)
 				{
 					m_freeElements.push(&element);
 				}

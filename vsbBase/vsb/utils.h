@@ -33,7 +33,18 @@ namespace vsb
 			static_assert(false, "no safe cast way is found for types");
 		}
 
+		//is here just to stop the compiler from complaining
 		return nullptr;
+	}
+
+
+	template<int MaxN, typename F>
+	constexpr void TemplateIndexedDispatch(int n, F&& func)
+	{
+		[&]<std::size_t... Is>(std::index_sequence<Is...>)
+		{
+			(void)((Is == n ? (func.template operator()<Is>(), true) : false) || ...);
+		}(std::make_index_sequence<MaxN>{});
 	}
 
 }

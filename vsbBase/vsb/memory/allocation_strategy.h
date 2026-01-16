@@ -9,8 +9,9 @@ namespace vsb::memory
 	enum class AllocationStrategy : uint8_t
 	{
 		Std = 0,
-		StdChecked,
 		SingleThreadedPool,
-		DefaultNewOperator,
+		MultiThreadedPool,
 	};
+
+	constexpr AllocationStrategy DefaultAllocationStrategy = AllocationStrategy::SingleThreadedPool;
 }

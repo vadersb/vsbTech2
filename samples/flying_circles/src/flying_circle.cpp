@@ -7,9 +7,8 @@
 #include "flying_circles_utils.h"
 #include "raylib.h"
 #include "vsb/objects/safe_ptr.h"
-#include "basic_memory_pool.h"
-#include "../../../cmake-build-debug-visual-studio/_deps/raylib-src/src/rlgl.h"
-
+#include "algorithm"
+#include "rlgl.h"
 
 FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles) :
 	m_x(fc_utils::GetRandomFloat(0.0f, params::WindowWidth)),
@@ -54,13 +53,13 @@ FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, c
 
 void* FlyingCircle::operator new(std::size_t size)
 {
-	return flying_circles::BasicMemoryPool::Allocate(size);
+	return vsb::memory::SingleThreadedPool::Allocate(size);
 }
 
 
 void FlyingCircle::operator delete(void* ptr, std::size_t size) noexcept
 {
-	flying_circles::BasicMemoryPool::Deallocate(ptr, size);
+	vsb::memory::SingleThreadedPool::Deallocate(ptr, size);
 }
 
 

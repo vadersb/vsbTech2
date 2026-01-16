@@ -39,7 +39,7 @@ namespace vsb
 	}
 
 
-	void DestructionCentral::DestroyObject(ManagedObjectBase* pObject)
+	void DestructionCentral::DestroyObject(ManagedObject* pObject)
 	{
 		delete pObject; // NOLINT(*-owning-memory)
 	}
@@ -53,7 +53,7 @@ namespace vsb
 	}
 
 
-	void DestructionCentral::DestructionList::Add(ManagedObjectBase* pObject)
+	void DestructionCentral::DestructionList::Add(ManagedObject* pObject)
 	{
 		if (m_TargetMainList)
 		{

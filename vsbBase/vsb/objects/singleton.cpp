@@ -4,6 +4,7 @@
 
 #include "vsb/log.h"
 #include "vsb/containers/container_utils.h"
+#include <algorithm>
 
 namespace vsb
 {

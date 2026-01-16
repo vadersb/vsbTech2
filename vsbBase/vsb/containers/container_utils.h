@@ -42,7 +42,7 @@ namespace vsb
 
 		static constexpr size_t BufferSize = sizeof(T) * initialSize + 64;
 
-		alignas(std::max_align_t) std::byte m_buffer[BufferSize] ;
+		alignas(std::max_align_t) std::byte m_buffer[BufferSize] {};
 
 		std::pmr::monotonic_buffer_resource m_resource{ m_buffer, BufferSize };
 		std::pmr::vector<T> m_vector{ &m_resource };

@@ -34,7 +34,7 @@ namespace
 	};
 
 
-	class TestManagedObject : public ManagedObjectDefault
+	class TestManagedObject : public ManagedObject
 	{
 	public:
 
