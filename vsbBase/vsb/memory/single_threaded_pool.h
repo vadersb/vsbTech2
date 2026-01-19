@@ -11,6 +11,9 @@
 #include <algorithm>
 #include "vsb/log.h"
 #include "vsb/utils.h"
+#include "vsb/vsb_settings.h"
+#include "vsb/debug.h"
+
 
 
 namespace vsb::memory
@@ -23,7 +26,9 @@ namespace vsb::memory
 
 		static void* Allocate(const size_t size)
 		{
-			auto bucketIndex = GetBucketIndex(size);
+			VSB_CHECK_THREAD();
+
+			const auto bucketIndex = GetBucketIndex(size);
 
 			if (bucketIndex == -1)
 			{
@@ -45,7 +50,9 @@ namespace vsb::memory
 
 		static void Deallocate(void* pElement, const size_t size)
 		{
-			auto bucketIndex = GetBucketIndex(size);
+			VSB_CHECK_THREAD();
+
+			const auto bucketIndex = GetBucketIndex(size);
 
 			if (bucketIndex == -1)
 			{
@@ -71,7 +78,7 @@ namespace vsb::memory
 
 		static_assert(s_BucketElementSizes.size() == s_BucketElementsCounts.size(), "sizes should match!");
 
-		static inline int64_t s_ObjectsCount {};
+		static inline int64_t s_ObjectsCount {0};
 
 		static int GetBucketIndex(const size_t size)
 		{

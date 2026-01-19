@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include "vsb/debug.h"
+
 
 namespace vsb
 {
@@ -22,6 +24,7 @@ namespace vsb
 
 		static void Uninit()
 		{
+			VSB_CHECK_THREAD();
 			ProcessAll();
 		}
 
@@ -55,6 +58,7 @@ namespace vsb
 			static DestructionList& GetInstance()
 			{
 				static_assert(std::is_same_v<TDestructionTag, TDestructionTag>, "Template parameter used for specialization");
+				VSB_CHECK_THREAD();
 
 				static DestructionList instance;
 				return instance;

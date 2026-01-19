@@ -130,6 +130,7 @@ namespace vsb::internal
 	ObjectRegistry & ObjectRegistry::GetInstance()
 	{
 		static ObjectRegistry instance;
+		VSB_CHECK_THREAD();
 		return instance;
 	}
 

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "log.h"
+#include "vsb_settings.h"
+#include <string_view>
 
 #ifdef DEBUG
 
@@ -30,5 +32,22 @@
 
 #define VSB_BREAK (void)0;
 #define VSB_ASSERT(x, msg) (void)0;
+
+#endif
+
+
+// Single thread check
+#ifdef VSB_SINGLE_THREAD_CHECK
+
+namespace vsb::debug
+{
+	void SingleThreadCheck(std::string_view detail);
+}
+
+#define VSB_CHECK_THREAD() ::vsb::debug::SingleThreadCheck(__FILE__)
+
+#else
+
+#define VSB_CHECK_THREAD() (void)0
 
 #endif
