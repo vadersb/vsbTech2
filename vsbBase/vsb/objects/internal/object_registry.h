@@ -78,6 +78,8 @@ namespace vsb::internal
 			ObjectHint hint = ObjectHint::Unspecified;
 		};
 
+		static_assert(std::is_trivially_copyable_v<Entry>);
+
 		std::vector<Entry> m_entries {ObjectRegistryCapacity, Entry()};
 		std::stack<uint32_t, std::vector<uint32_t>> m_freeIndices {};
 

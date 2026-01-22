@@ -44,9 +44,14 @@ namespace
 	
 
 	uint64_t s_LastUpdateMicros = 0;
-	constexpr int LastUpdateTimesCount = 120;
+	constexpr int LastUpdateTimesCount = 180;
 	std::array<uint64_t, LastUpdateTimesCount> s_UpdateTimesHistory {};
 	int s_UpdateTimesIndex = 0;
+
+	uint64_t s_LastRenderMicros = 0;
+	constexpr int LastRenderTimesCount = LastUpdateTimesCount;
+	std::array<uint64_t, LastRenderTimesCount> s_RenderTimesHistory {};
+	int s_RenderTimesIndex = 0;
 
 	uint64_t s_AutoGenBaseCount = 1000;
 	uint64_t s_AutoGenRange = 1500;
@@ -111,10 +116,10 @@ namespace
 			}
 		}
 
-		if (IsKeyPressed(KEY_S))
-		{
-			s_UseTemplatedSort = !s_UseTemplatedSort;
-		}
+		// if (IsKeyPressed(KEY_S))
+		// {
+		// 	s_UseTemplatedSort = !s_UseTemplatedSort;
+		// }
 	}
 
 
@@ -188,6 +193,10 @@ namespace
 			std::erase(s_Circles, nullptr);
 		}
 
+		for (auto* pCircle: s_Circles)
+		{
+			pCircle->PostUpdate();
+		}
 	}
 
 
@@ -278,7 +287,16 @@ int main()
 		s_UpdateTimesHistory[s_UpdateTimesIndex] = s_LastUpdateMicros;
 		s_UpdateTimesIndex = (s_UpdateTimesIndex + 1) % LastUpdateTimesCount;
 
+		auto renderStartTime = std::chrono::high_resolution_clock::now();
 		render();
+		auto renderEndTime = std::chrono::high_resolution_clock::now();
+
+		EndDrawing();
+
+		s_LastRenderMicros = std::chrono::duration_cast<std::chrono::microseconds>(renderEndTime - renderStartTime).count();
+
+		s_RenderTimesHistory[s_RenderTimesIndex] = s_LastRenderMicros;
+		s_RenderTimesIndex = (s_RenderTimesIndex + 1) % LastRenderTimesCount;
 
 		DestructionCentral::ProcessDefault();
 	}
@@ -370,7 +388,7 @@ namespace
 		DrawText(TextFormat("Total Objects Created: %llu", s_TotalObjectsCreated), 10, 10, 20, WHITE);
 		DrawText(TextFormat("Objects: %zu", s_Circles.size()), 10, 40, 30, WHITE);
 
-		DrawText(TextFormat("Update time (ms): %i", s_UpdateTimesHistory[s_UpdateTimesIndex] / 1000), 10, 120, 20, WHITE);
+
 
 		// Update time bars: 1 pixel = 10 microseconds
 		// Draw all historical bars with low alpha (ghosted)
@@ -380,6 +398,14 @@ namespace
 			if (s_UpdateTimesHistory[i] > maxUpdateTime)
 				maxUpdateTime = s_UpdateTimesHistory[i];
 		}
+
+		uint64_t maxRenderTime = 0;
+		for (int i = 0; i < LastRenderTimesCount; i++)
+		{
+			if (s_RenderTimesHistory[i] > maxRenderTime)
+				maxRenderTime = s_RenderTimesHistory[i];
+		}
+
 		int maxBarWidth = static_cast<int>(maxUpdateTime / 10);
 		constexpr Color maxColor(255, 0, 0, 80);
 		DrawRectangle(10, 70, maxBarWidth, 16, maxColor);
@@ -394,6 +420,21 @@ namespace
 		const int updateBarWidth = static_cast<int>(s_LastUpdateMicros / 10);
 		DrawRectangle(10, 70, updateBarWidth, 16, SKYBLUE);
 
+		//update and render times
+		DrawText(TextFormat("Update time: %i", maxUpdateTime), 10, 120, 20, WHITE);
+		DrawText(TextFormat("Render time: %i", maxRenderTime), 10, 150, 20, WHITE);
+
+		//target fps
+		int64_t fullFrameTime = 1 + maxUpdateTime + maxRenderTime;
+
+		int64_t targetFps = 1'000'000 / fullFrameTime;
+
+		constexpr Color TargetFPSColor(10, 150, 10, 180);
+
+		DrawText(TextFormat("Target FPS: %i", targetFps), 320, 40, 20, TargetFPSColor);
+
+
+		//---
 		DrawText(TextFormat("[S] Use Templated Sort: %s", s_UseTemplatedSort ? "ON" : "OFF"), 10, 290, 20, GREEN);
 
 		DrawText(TextFormat("[X] Slow Gen Rate: %s", s_SlowGenRate ? "ON" : "OFF"), 10, 350, 20,
@@ -422,7 +463,7 @@ namespace
 
 		DrawText(TextFormat("Pooled Objects: %llu", vsb::memory::SingleThreadedPool::GetObjectsCount()), 10, 600, 20, BEIGE);
 
-		EndDrawing();
+
 	}
 }
 

@@ -63,9 +63,15 @@ void FlyingCircle::operator delete(void* ptr, std::size_t size) noexcept
 }
 
 
-void FlyingCircle::Update(float dt)
+void FlyingCircle::Update(const float dt)
 {
 	m_age += dt;
+
+	if (IsDead())
+	{
+		return;
+	}
+
 	m_x += m_velX * dt;
 	m_y += m_velY * dt;
 
@@ -82,6 +88,12 @@ void FlyingCircle::Update(float dt)
 	}
 
 
+
+}
+
+
+void FlyingCircle::PostUpdate()
+{
 	UpdateOtherCirclesList();
 }
 
@@ -177,7 +189,7 @@ void FlyingCircle::UpdateOtherCirclesList()
 
 	for (auto& otherCircle : m_otherCircles)
 	{
-		if (otherCircle.Validate() == false)
+		if (otherCircle->IsDead())
 		{
 			otherCircle.Reset();
 			hasRemovals = true;

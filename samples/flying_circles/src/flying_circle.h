@@ -22,6 +22,7 @@ public:
 
 
 	void Update(float dt);
+	void PostUpdate();
 	void Destroy();
 
 	void Draw() const;
