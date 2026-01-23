@@ -4,6 +4,7 @@
 
 
 #include "vsb.h"
+#include "objects/destruction_central.h"
 #include "vsb/objects/internal/object_registry.h"
 
 namespace vsb
@@ -11,5 +12,6 @@ namespace vsb
 	void VSBInit()
 	{
 		internal::ObjectRegistry::Init();
+		DestructionCentral::InitDefault();
 	}
 }

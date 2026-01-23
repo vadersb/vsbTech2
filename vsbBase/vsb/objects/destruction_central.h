@@ -11,16 +11,22 @@ namespace vsb
 {
 	struct DefaultDestructionTag;
 	class ManagedObject;
-
+	void VSBInit();
 
 	class DestructionCentral
 	{
 
 		friend class vsb::ManagedObject;
+		friend void vsb::VSBInit();
 
 	public:
 
 		static void ProcessDefault();
+
+		static void InitDefault()
+		{
+			DestructionList<DefaultDestructionTag>::Init();
+		}
 
 		static void Uninit()
 		{
@@ -32,7 +38,7 @@ namespace vsb
 		template<typename TDestructionTag>
 		static void Process()
 		{
-			auto& destructionList = DestructionList::GetInstance<TDestructionTag>();
+			auto& destructionList = DestructionList<TDestructionTag>::GetInstance();
 			destructionList.Process();
 		}
 
@@ -43,26 +49,125 @@ namespace vsb
 		static void DestroyObject(ManagedObject* pObject);
 
 
-		class DestructionList
+		class DestructionListBase
+		{
+		public:
+			virtual ~DestructionListBase() = default;
+
+			virtual bool Process() = 0;
+		};
+
+
+		template<typename TDestructionTag>
+		class DestructionList : public DestructionListBase
 		{
 		public:
 
-			DestructionList();
+			DestructionList()
+			{
+				s_DestructionLists.push_back(this);
+				m_ObjectsToDestroy.reserve(1024);
+				m_ObjectsToDestroyExtra.reserve(128);
+
+				s_pInstance = this;
+			}
 
 
-			void Add(ManagedObject* pObject);
-			bool Process();
+			~DestructionList() final
+			{
+				s_pInstance = nullptr;
+			}
 
 
-			template<typename TDestructionTag>
+			void Add(ManagedObject* pObject)
+			{
+				if (m_TargetMainList)
+				{
+					m_ObjectsToDestroy.push_back(pObject);
+				}
+				else
+				{
+					m_ObjectsToDestroyExtra.push_back(pObject);
+				}
+			}
+
+
+			bool Process() override
+			{
+				bool hadAnyDeletions = false;
+
+				if (m_IsProcessing)
+				{
+					VSBLOG_ERROR("DestructionList::Process called while already processing");
+					return false;
+				}
+
+				m_IsProcessing = true;
+
+				while (true)
+				{
+					//main list
+					m_TargetMainList = false;
+
+					bool hadDeletions = false;
+
+					if (m_ObjectsToDestroy.empty() == false)
+					{
+						hadDeletions = true;
+						hadAnyDeletions = true;
+
+						for (auto* pObject: m_ObjectsToDestroy)
+						{
+							DestroyObject(pObject);
+						}
+
+						m_ObjectsToDestroy.clear();
+					}
+
+
+					//extra list
+					m_TargetMainList = true;
+
+					if (m_ObjectsToDestroyExtra.empty() == false)
+					{
+						hadDeletions = true;
+						hadAnyDeletions = true;
+
+						for (auto* pObject: m_ObjectsToDestroyExtra)
+						{
+							DestroyObject(pObject);
+						}
+
+						m_ObjectsToDestroyExtra.clear();
+					}
+
+
+					if (!hadDeletions)
+					{
+						break;
+					}
+				}
+
+				m_IsProcessing = false;
+
+				return hadAnyDeletions;
+			}
+
+
+			static void Init()
+			{
+				static DestructionList instance;
+			}
+
+
 			static DestructionList& GetInstance()
 			{
 				static_assert(std::is_same_v<TDestructionTag, TDestructionTag>, "Template parameter used for specialization");
 				VSB_CHECK_THREAD();
 
-				static DestructionList instance;
-				return instance;
+				return *s_pInstance;
 			}
+
 
 		private:
 
@@ -70,17 +175,19 @@ namespace vsb
 			bool m_TargetMainList = true;
 			std::vector<ManagedObject*> m_ObjectsToDestroy {};
 			std::vector<ManagedObject*> m_ObjectsToDestroyExtra {};
+
+			static inline DestructionList* s_pInstance {nullptr};
 		};
 
 
 		template<typename TDestructionTag>
 		static void Schedule(ManagedObject* pObject)
 		{
-			auto& destructionList = DestructionList::GetInstance<TDestructionTag>();
+			auto& destructionList = DestructionList<TDestructionTag>::GetInstance();
 			destructionList.Add(pObject);
 		}
 
-		static std::vector<DestructionList*> s_DestructionLists;
+		static std::vector<DestructionListBase*> s_DestructionLists;
 
 
 	};

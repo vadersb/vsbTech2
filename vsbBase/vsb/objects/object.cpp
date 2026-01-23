@@ -16,7 +16,7 @@ namespace vsb
 
 	Object::~Object()
 	{
-		if (internal::ObjectRegistry::s_IsTerminated == true)
+		if (internal::ObjectRegistry::s_pInstance == nullptr)
 		{
 			return;
 		}
@@ -27,7 +27,7 @@ namespace vsb
 
 	internal::Handle Object::RegisterHandle(ObjectHint objectHint)
 	{
-		if (internal::ObjectRegistry::s_IsTerminated == true)
+		if (internal::ObjectRegistry::s_pInstance == nullptr)
 		{
 			VSB_ASSERT(false, "ObjectRegistry is terminated");
 			return internal::Handle::Empty;
