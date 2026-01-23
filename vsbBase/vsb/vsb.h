@@ -6,5 +6,5 @@
 
 namespace vsb
 {
-
+	void VSBInit();
 }

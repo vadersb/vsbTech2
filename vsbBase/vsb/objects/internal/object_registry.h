@@ -13,6 +13,7 @@ namespace vsb
 	template<typename T> class Hnd;
 	template<typename T> class Ptr;
 	template<typename T> class SafePtr;
+	void VSBInit();
 }
 
 namespace vsb::internal
@@ -33,6 +34,7 @@ namespace vsb::internal
 		template<typename T> friend class vsb::Hnd;
 		template<typename T> friend class vsb::Ptr;
 		template<typename T> friend class vsb::SafePtr;
+		friend void vsb::VSBInit();
 
 	public:
 
@@ -55,13 +57,15 @@ namespace vsb::internal
 
 	private:
 
+		static void Init();
+
 		Handle RegisterObject(Object* pObject, ObjectHint hint);
 		void   UnregisterObject(const Handle& handle);
 
 		[[nodiscard]] Object* GetObject(const Handle& handle) const;
 		[[nodiscard]] bool    ValidateHandle(const Handle& handle) const;
 
-		static bool s_IsTerminated;
+		static ObjectRegistry* s_pInstance;
 		static ObjectRegistry& GetInstance();
 
 		void ExpandStorage();
