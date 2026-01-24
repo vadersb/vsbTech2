@@ -4,4 +4,4 @@
 
 #pragma once
 
-#define VSB_SINGLE_THREAD_CHECK
+//#define VSB_SINGLE_THREAD_CHECK

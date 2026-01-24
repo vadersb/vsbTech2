@@ -10,7 +10,7 @@
 #include "algorithm"
 #include "rlgl.h"
 
-FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles) :
+FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<vsb::Ptr<FlyingCircle>>& allCircles) :
 	m_x(fc_utils::GetRandomFloat(0.0f, params::WindowWidth)),
 	m_y(fc_utils::GetRandomFloat(0.0f, params::WindowHeight)),
 	m_velX((fc_utils::GetRandomFloat01() - 0.5f) * 100.0f),
@@ -45,7 +45,7 @@ FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, c
 			continue;
 		}
 
-		FlyingCircle* otherCircle = allCircles[otherCircleIndex];
+		FlyingCircle* otherCircle = allCircles[otherCircleIndex].Get();
 		m_otherCircles.push_back(vsb::CreateSafePtr(otherCircle));
 	}
 }

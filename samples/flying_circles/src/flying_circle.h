@@ -7,14 +7,19 @@
 #include "raylib.h"
 #include "vsb/objects/managed_object.h"
 #include "vsb/objects/safe_ptr.h"
+#include "vsb/objects/ptr.h"
 #include "vsb/containers/vsb_vector.h"
+
+class FlyingCircle;
+using FlyingCirclePtr = vsb::Ptr<FlyingCircle>;
+
 
 class FlyingCircle : public vsb::ManagedObject
 {
 public:
 
 
-	FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCircle*>& allCircles);
+	FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCirclePtr>& allCircles);
 
 	void* operator new(std::size_t size);
 	void operator delete(void* ptr, std::size_t size) noexcept;

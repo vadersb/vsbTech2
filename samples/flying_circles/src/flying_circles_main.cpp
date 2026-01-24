@@ -4,6 +4,7 @@
 
 
 #include "vsb/log.h"
+#include "vsb/objects/ptr.h"
 #include "flying_circles_settings.h"
 #include "raylib.h"
 #include "flying_circle.h"
@@ -33,7 +34,7 @@ namespace
 	float s_TimeSinceLastGen = 0.0f;
 
 	std::vector<vsb::vector<int>> s_GarbageArrays {};
-	std::vector<FlyingCircle*> s_Circles {};
+	std::vector<FlyingCirclePtr> s_Circles {};
 
 	std::vector<SortableCircle> s_CurFrameCircles {};
 	uint64_t s_CurFrameMaxCircleCount = 0;
@@ -68,7 +69,7 @@ namespace
 			: GetRandomFloat(RegularLifetimeMin, RegularLifetimeMax);
 
 		auto* pCircle = new FlyingCircle(lifetime, MinArraySize, MaxArraySize, s_Circles);
-		s_Circles.push_back(pCircle);
+		s_Circles.emplace_back(pCircle);
 		s_TotalObjectsCreated++;
 	}
 
@@ -176,13 +177,13 @@ namespace
 
 		for (int i = count - 1; i >= 0; i--)
 		{
-			auto* pCircle = s_Circles[i];
+			auto* pCircle = s_Circles[i].Get();
 			pCircle->Update(timeDelta);
 
 			if (pCircle->IsDead())
 			{
 				pCircle->Destroy();
-				s_Circles[i] = nullptr;
+				s_Circles[i].Reset();
 				hasRemovals = true;
 				//s_Circles.erase(s_Circles.begin() + i);
 			}
@@ -190,10 +191,10 @@ namespace
 
 		if (hasRemovals)
 		{
-			std::erase(s_Circles, nullptr);
+			std::erase(s_Circles, Ptr<FlyingCircle>{});
 		}
 
-		for (auto* pCircle: s_Circles)
+		for (auto pCircle: s_Circles)
 		{
 			pCircle->PostUpdate();
 		}
@@ -202,7 +203,7 @@ namespace
 
 	void remove_all_circles()
 	{
-		for (auto* pCircle : s_Circles)
+		for (auto pCircle : s_Circles)
 		{
 			pCircle->Destroy();
 		}
@@ -216,7 +217,7 @@ namespace
 		//Per frame circles processing
 		for (int i = 0; i < static_cast<int>(s_Circles.size()); i++)
 		{
-			auto* circle = s_Circles[i];
+			auto* circle = s_Circles[i].Get();
 
 			if (circle->GetOtherCirclesCount() % 2 == 1) continue;
 
@@ -265,6 +266,7 @@ namespace
 int main()
 {
 	log::Init(true);
+	VSBInit();
 
 	SetConfigFlags(FLAG_VSYNC_HINT);
 	InitWindow(WindowWidth, WindowHeight, "Flying Circles");
@@ -373,7 +375,7 @@ namespace
 
 		rlBegin(RL_QUADS);
 
-		for (const auto* pCircle : s_Circles)
+		for (const auto& pCircle : s_Circles)
 		{
 			pCircle->DrawQuad();
 		}
@@ -425,9 +427,9 @@ namespace
 		DrawText(TextFormat("Render time: %i", maxRenderTime), 10, 150, 20, WHITE);
 
 		//target fps
-		int64_t fullFrameTime = 1 + maxUpdateTime + maxRenderTime;
+		const int64_t fullFrameTime = static_cast<int64_t>(1 + maxUpdateTime + maxRenderTime);
 
-		int64_t targetFps = 1'000'000 / fullFrameTime;
+		const int64_t targetFps = 1'000'000 / fullFrameTime;
 
 		constexpr Color TargetFPSColor(10, 150, 10, 180);
 

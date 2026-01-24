@@ -10,6 +10,7 @@
 #include "internal/handle.h"
 #include "internal/object_registry.h"
 #include "vsb/utils.h"
+#include "vsb/debug.h"
 
 
 #ifdef VSB_PTR_VALIDATE

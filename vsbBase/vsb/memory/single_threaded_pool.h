@@ -22,11 +22,25 @@ namespace vsb::memory
 	{
 	public:
 
+		static void Init()
+		{
+			for (int i = 0; i < BucketsCount; i++)
+			{
+				TemplateIndexedDispatch<BucketsCount>(i, []<std::size_t index>()
+				{
+					Bucket<index>::Init();
+				});
+			}
+
+			s_WasInit = true;
+		}
+
 		static std::int64_t GetObjectsCount() {return s_ObjectsCount;}
 
 		static void* Allocate(const size_t size)
 		{
 			VSB_CHECK_THREAD();
+			VSB_ASSERT(s_WasInit, "Pool was not initialized!");
 
 			const auto bucketIndex = GetBucketIndex(size);
 
@@ -37,10 +51,9 @@ namespace vsb::memory
 
 			void* pResult;
 
-			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [&pResult]<std::size_t index>()
+			TemplateIndexedDispatch<BucketsCount>(bucketIndex, [&pResult]<std::size_t index>()
 			{
-				auto& bucket = GetBucket<index>();
-				pResult = bucket.Allocate();
+				pResult = Bucket<index>::GetInstance()->Allocate();
 			});
 
 			s_ObjectsCount++;
@@ -51,6 +64,7 @@ namespace vsb::memory
 		static void Deallocate(void* pElement, const size_t size)
 		{
 			VSB_CHECK_THREAD();
+			VSB_ASSERT(s_WasInit, "Pool was not initialized!");
 
 			const auto bucketIndex = GetBucketIndex(size);
 
@@ -60,11 +74,11 @@ namespace vsb::memory
 				return;
 			}
 
-			TemplateIndexedDispatch<s_BucketElementSizes.size()>(bucketIndex, [pElement]<std::size_t index>()
+			TemplateIndexedDispatch<BucketsCount>(bucketIndex, [pElement]<std::size_t index>()
 			{
 				if (!Bucket<index>::WasShutDown())
 				{
-					GetBucket<index>().Deallocate(pElement);
+					Bucket<index>::GetInstance()->Deallocate(pElement);
 				}
 			});
 
@@ -76,14 +90,15 @@ namespace vsb::memory
 		static constexpr std::array s_BucketElementSizes {8ul, 16ul, 32ul, 64ul, 128ul, 256ul, 512ul, 1024ul, 2048ul, 4096ul, 8192ul, 16384ul, 16384ul * 2ul, 16384ul * 2ul};
 		static constexpr std::array s_BucketElementsCounts {64ul * 1024, 64ul * 1024, 64ul * 1024, 32ul * 1024, 16ul * 1024, 8ul * 1024, 8ul * 1024, 8ul * 1024, 4ul * 1024, 4ul * 1024, 256ul, 128ul, 64ul, 64ul};
 
+		static constexpr int BucketsCount = s_BucketElementSizes.size();
+
 		static_assert(s_BucketElementSizes.size() == s_BucketElementsCounts.size(), "sizes should match!");
 
 		static inline int64_t s_ObjectsCount {0};
+		static inline bool s_WasInit {false};
 
 		static int GetBucketIndex(const size_t size)
 		{
-			constexpr int BucketsCount = static_cast<const int>(s_BucketElementSizes.size());
-
 			for (int i = 0; i < BucketsCount; i++)
 			{
 				if (size <= s_BucketElementSizes[i])
@@ -112,21 +127,33 @@ namespace vsb::memory
 
 		public:
 
+			static void Init()
+			{
+				static Bucket instance;
+			}
+
+
+			static Bucket* GetInstance()
+			{
+				return s_pInstance;
+			}
+
 			Bucket()
 			{
 				// Pre-reserve for one page worth of elements
 				std::vector<void*> storage;
 				storage.reserve(BucketElementsCount);
 				m_freeElements = std::stack(std::move(storage));
+				s_pInstance = this;
 			}
 
 			~Bucket()
 			{
-				s_WasShutDown = true;
+				s_pInstance = nullptr;
 			}
 
 
-			static bool WasShutDown() {return s_WasShutDown;}
+			static bool WasShutDown() {return s_pInstance == nullptr;}
 
 
 			void* Allocate()
@@ -156,7 +183,7 @@ namespace vsb::memory
 				auto* pPage = static_cast<Page*>(::operator new(sizeof(Page), std::align_val_t{alignof(std::max_align_t)}));
 
 				// Store for potential cleanup (optional, since we're not freeing)
-				GetAllocatedPages().push_back(pPage);
+				m_allocatedPages.push_back(pPage);
 
 				for (auto& element : pPage->data)
 				{
@@ -168,25 +195,10 @@ namespace vsb::memory
 
 		private:
 
-			// SIOF-safe storage for allocated pages
-			static std::vector<Page*>& GetAllocatedPages()
-			{
-				static std::vector<Page*> pages;
-				return pages;
-			}
-
-			inline static bool s_WasShutDown {false};
+			inline static Bucket* s_pInstance {nullptr};
 			int m_pagesUsed {0};
 			std::stack<void*, std::vector<void*>> m_freeElements {};
+			std::vector<Page*> m_allocatedPages {};
 		};
-
-
-		template<int bucketIndex>
-		static Bucket<bucketIndex>& GetBucket()
-		{
-			static Bucket<bucketIndex> bucket;
-			return bucket;
-		}
-
 	};
 }

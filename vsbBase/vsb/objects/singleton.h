@@ -57,14 +57,27 @@ namespace vsb
 
 		static TSingleton& GetInstance()
 		{
-			return GetInstanceSafePtr().GetRef();
+			VSB_ASSERT(s_isInitialized, "Singleton is not initialized!");
+			VSB_ASSERT(s_pInstance != nullptr, "Singleton instance is null!");
+			return *s_pInstance;
 		}
 
 
 		static TSingleton* GetInstancePtrIfAvailable()
 		{
-			auto safePtrCopy = GetInstanceSafePtr();
-			return safePtrCopy.ValidateAndGet();
+			return s_pInstance;
+		}
+
+
+		static void Init()
+		{
+			if (s_isInitialized)
+			{
+				return;
+			}
+
+			s_pInstance = new TSingleton();
+			s_isInitialized = true;
 		}
 
 
@@ -76,12 +89,15 @@ namespace vsb
 		}
 
 
+		~Singleton() override
+		{
+			s_pInstance = nullptr;
+		}
+
+
 	private:
 
-		static SafePtr<TSingleton>& GetInstanceSafePtr()
-		{
-			static SafePtr<TSingleton> instance = new TSingleton();
-			return instance;
-		}
+		static inline TSingleton* s_pInstance {nullptr};
+		static inline bool s_isInitialized {false};
 	};
 }

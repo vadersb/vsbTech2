@@ -35,6 +35,8 @@ namespace
 
 TEST_CASE("Singleton - basic tests", "[objects][singleton]")
 {
+	BasicSingleton::Init();
+
 	SECTION("Singleton init and get default value")
 	{
 		auto defaultValue = BasicSingleton::GetInstance().GetValue();
