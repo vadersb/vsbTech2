@@ -43,7 +43,7 @@ namespace vsb
 
 	SingletonBase::SingletonList& SingletonBase::GetSingletonList()
 	{
-		static TempVectorSetup<SingletonEntry, 2048> singletonListSetup;
-		return singletonListSetup.GetVector();
+		static std::vector singletonList(ReserveEmptyVector<SingletonEntry>(2048));
+		return singletonList;
 	}
 }

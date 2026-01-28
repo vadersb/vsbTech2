@@ -8,12 +8,12 @@
 
 namespace vsb
 {
-	template<typename TSingleton, int priority>
+	template<typename TSingleton>
 	class Singleton;
 
 	class SingletonBase : public Object
 	{
-		template<typename TSingleton, int priority>
+		template<typename TSingleton>
 		friend class Singleton;
 
 	public:
@@ -44,13 +44,13 @@ namespace vsb
 
 		static constexpr size_t SingletonEntriesMaxCount = 1024;
 
-		using SingletonList = std::pmr::vector<SingletonEntry>;
+		using SingletonList = std::vector<SingletonEntry>;
 
 		static SingletonList& GetSingletonList();
 	};
 
 
-	template<typename TSingleton, int priority = 0>
+	template<typename TSingleton>
 	class Singleton : public SingletonBase
 	{
 	public:
@@ -83,7 +83,7 @@ namespace vsb
 
 	protected:
 
-		Singleton()
+		Singleton(const int priority = 0)
 		{
 			RegisterSingleton(CreateSafePtr(this), priority);
 		}

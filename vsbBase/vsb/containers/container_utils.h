@@ -12,7 +12,7 @@ namespace vsb
 	template<typename T>
 	std::vector<T> ReserveEmptyVector(size_t size)
 	{
-		std::vector<T> result(size);
+		std::vector<T> result;
 		result.reserve(size);
 		return result;
 	}
