@@ -83,7 +83,7 @@ namespace vsb
 
 	protected:
 
-		Singleton(const int priority = 0)
+		explicit Singleton(const int priority = 0)
 		{
 			RegisterSingleton(CreateSafePtr(this), priority);
 		}
