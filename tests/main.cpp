@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
 {
     // === SETUP ===
     vsb::log::InitForTests();
+
     VSBLOG_INFO("Global test setup init");
 
     vsb::VSBInit();

@@ -9,6 +9,7 @@ namespace vsb::log
 	static std::shared_ptr<spdlog::logger> s_logger;
 
 	static const std::string LoggerName = "Game";
+	constexpr auto LogPattern = "[%H:%M:%S.%e] [%^%l%$] %v";
 
 	void Init(const bool enableConsole, std::string_view logFile)
 	{
@@ -19,13 +20,15 @@ namespace vsb::log
 		if (enableConsole)
 		{
 			const auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-			console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+			console_sink->set_pattern(LogPattern);
 			sinks.push_back(console_sink);
 		}
 
 		if (!logFile.empty())
 		{
-			sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::string(logFile)));
+			const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::string(logFile));
+			file_sink->set_pattern(LogPattern);
+			sinks.push_back(file_sink);
 		}
 
 		s_logger = std::make_shared<spdlog::logger>(LoggerName, sinks.begin(), sinks.end());

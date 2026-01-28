@@ -10,17 +10,16 @@ namespace vsb
 	template<typename TTo, typename TFrom>
 	TTo* SafeCast(TFrom* sourcePointer)
 	{
-		if constexpr (std::is_same_v<TFrom, TTo>)
-		{
-			return sourcePointer;
-		}
-
 		if (sourcePointer == nullptr)
 		{
 			return nullptr;
 		}
 
-		if constexpr (std::is_convertible_v<TFrom*, TTo*>)
+		if constexpr (std::is_same_v<TFrom, TTo>)
+		{
+			return sourcePointer;
+		}
+		else if constexpr (std::is_convertible_v<TFrom*, TTo*>)
 		{
 			return static_cast<TTo*>(sourcePointer);
 		}
@@ -30,11 +29,9 @@ namespace vsb
 		}
 		else
 		{
-			static_assert(false, "no safe cast way is found for types");
+			static_assert(!std::is_same_v<TFrom, TFrom>, "no safe cast way is found for types");
+			return nullptr;
 		}
-
-		//is here just to stop the compiler from complaining
-		return nullptr;
 	}
 
 

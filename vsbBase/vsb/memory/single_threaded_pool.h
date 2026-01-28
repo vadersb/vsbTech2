@@ -90,7 +90,7 @@ namespace vsb::memory
 		static constexpr std::array s_BucketElementSizes {8ul, 16ul, 32ul, 64ul, 128ul, 256ul, 512ul, 1024ul, 2048ul, 4096ul, 8192ul, 16384ul, 16384ul * 2ul, 16384ul * 2ul};
 		static constexpr std::array s_BucketElementsCounts {64ul * 1024, 64ul * 1024, 64ul * 1024, 32ul * 1024, 16ul * 1024, 8ul * 1024, 8ul * 1024, 8ul * 1024, 4ul * 1024, 4ul * 1024, 256ul, 128ul, 64ul, 64ul};
 
-		static constexpr int BucketsCount = s_BucketElementSizes.size();
+		static constexpr int BucketsCount {(int)s_BucketElementSizes.size()};
 
 		static_assert(s_BucketElementSizes.size() == s_BucketElementsCounts.size(), "sizes should match!");
 

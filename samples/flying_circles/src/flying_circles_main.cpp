@@ -19,7 +19,7 @@ using namespace fc_utils;
 
 namespace
 {
-	using SortableCircle = fc_utils::PointerWithIndex<FlyingCircle>;
+	using SortableCircle = PointerWithIndex<FlyingCircle>;
 
 
 	void update();
@@ -230,19 +230,19 @@ namespace
 		}
 		else
 		{
-			std::sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end(),
-						 [](const SortableCircle& a, const SortableCircle& b)
-						 {
-							 const auto countA = a.pPointer->GetOtherCirclesCount();
-							 const auto countB = b.pPointer->GetOtherCirclesCount();
+			std::ranges::sort(s_CurFrameCircles,
+			                  [](const SortableCircle& a, const SortableCircle& b)
+			                  {
+				                  const auto countA = a.pPointer->GetOtherCirclesCount();
+				                  const auto countB = b.pPointer->GetOtherCirclesCount();
 
-							 if (countA != countB)
-							 {
-								 return countA < countB;
-							 }
+				                  if (countA != countB)
+				                  {
+					                  return countA < countB;
+				                  }
 
-							 return a.index < b.index;
-						 });
+				                  return a.index < b.index;
+			                  });
 		}
 
 		s_CurFrameCurCircleCount = s_CurFrameCircles.size();
@@ -265,9 +265,14 @@ namespace
 
 int main()
 {
-	log::Init(true);
+	log::Init(true, "flying_circles.log");
+	VSBLOG_INFO("");
+	VSBLOG_INFO("");
+	VSBLOG_INFO("");
+	VSBLOG_INFO("                   ----------=== FLYING CIRCLES SAMPLE STARTED ===----------                    ");
 	VSBInit();
 
+	SetTraceLogCallback(MyRaylibLogCallback);
 	SetConfigFlags(FLAG_VSYNC_HINT);
 	InitWindow(WindowWidth, WindowHeight, "Flying Circles");
 	SetTargetFPS(0);
