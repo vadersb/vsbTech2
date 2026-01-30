@@ -34,7 +34,7 @@ void fc_utils::MyRaylibLogCallback(int logLevel, const char* text, va_list args)
 	{
 		case LOG_TRACE:
 		case LOG_DEBUG:
-			VSBLOG_INFO(buffer);//;
+			VSBLOG_DEBUG("{}", buffer);
 			break;
 		case LOG_INFO:
 			VSBLOG_INFO(buffer);

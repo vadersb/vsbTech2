@@ -55,9 +55,35 @@ namespace flying_circles
 
         finalColor = vec4(fragColor.rgb, fragColor.a * alpha);
     }
-	)";
+    )";
 
+    static inline const char* AltCircleFragmentShader = R"(
+    #version 330
 
+    in vec2 fragTexCoord;
+    in vec4 fragColor;
 
+    out vec4 finalColor;
 
+    void main()
+    {
+        // Convert UV from [0,1] to [-1,1] centered coordinates
+        vec2 uv = fragTexCoord * 2.0 - 1.0;
+
+        // Distance from center
+        float dist = length(uv);
+
+        // Ring: outer radius = 1.0, inner radius = 1.0 - (2px in UV space)
+        float px = fwidth(dist);
+        float innerRadius = 1.0 - 2.0 * px;
+
+        // Build a 2px inward ring with anti-aliasing
+        float outer = 1.0 - smoothstep(1.0 - px, 1.0 + px, dist);
+        float inner = 1.0 - smoothstep(innerRadius - px, innerRadius + px, dist);
+
+        float alpha = clamp(outer - inner, 0.0, 1.0);
+
+        finalColor = vec4(fragColor.rgb, fragColor.a * alpha);
+    }
+    )";
 }

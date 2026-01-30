@@ -57,9 +57,11 @@ namespace
 	uint64_t s_AutoGenBaseCount = 1000;
 	uint64_t s_AutoGenRange = 1500;
 
-	bool s_UseTemplatedSort = false;
+	Shader s_CurShader;
 
 	Shader s_CircleShader;
+	Shader s_AltCircleShader;
+	bool s_UseAltShader = false;
 
 
 	void add_circle()
@@ -117,10 +119,11 @@ namespace
 			}
 		}
 
-		// if (IsKeyPressed(KEY_S))
-		// {
-		// 	s_UseTemplatedSort = !s_UseTemplatedSort;
-		// }
+		if (IsKeyPressed(KEY_S))
+		{
+			s_UseAltShader = !s_UseAltShader;
+			s_CurShader = s_UseAltShader ? s_AltCircleShader : s_CircleShader;
+		}
 	}
 
 
@@ -224,26 +227,21 @@ namespace
 			s_CurFrameCircles.push_back({circle, i});
 		}
 
-		if (s_UseTemplatedSort)
-		{
-			//std::sort(s_CurFrameCircles.begin(), s_CurFrameCircles.end());
-		}
-		else
-		{
-			std::ranges::sort(s_CurFrameCircles,
-			                  [](const SortableCircle& a, const SortableCircle& b)
+
+		std::ranges::sort(s_CurFrameCircles,
+		                  [](const SortableCircle& a, const SortableCircle& b)
+		                  {
+			                  const auto countA = a.pPointer->GetOtherCirclesCount();
+			                  const auto countB = b.pPointer->GetOtherCirclesCount();
+
+			                  if (countA != countB)
 			                  {
-				                  const auto countA = a.pPointer->GetOtherCirclesCount();
-				                  const auto countB = b.pPointer->GetOtherCirclesCount();
+				                  return countA < countB;
+			                  }
 
-				                  if (countA != countB)
-				                  {
-					                  return countA < countB;
-				                  }
+			                  return a.index < b.index;
+		                  });
 
-				                  return a.index < b.index;
-			                  });
-		}
 
 		s_CurFrameCurCircleCount = s_CurFrameCircles.size();
 
@@ -278,6 +276,9 @@ int main()
 	SetTargetFPS(0);
 
 	s_CircleShader = LoadShaderFromMemory(flying_circles::CircleVertexShader, flying_circles::CircleFragmentShader);
+	s_AltCircleShader = LoadShaderFromMemory(flying_circles::CircleVertexShader, flying_circles::AltCircleFragmentShader);
+
+	s_CurShader = s_CircleShader;
 
 	s_Circles.reserve(32 * 1024);
 	s_CurFrameCircles.reserve(s_Circles.capacity());
@@ -311,6 +312,7 @@ int main()
 	remove_all_circles();
 
 	UnloadShader(s_CircleShader);
+	UnloadShader(s_AltCircleShader);
 	CloseWindow();
 
 	DestructionCentral::Uninit();
@@ -376,7 +378,7 @@ namespace
 		BeginDrawing();
 		ClearBackground(BLACK);
 
-		BeginShaderMode(s_CircleShader);
+		BeginShaderMode(s_CurShader);
 
 		rlBegin(RL_QUADS);
 
@@ -442,8 +444,6 @@ namespace
 
 
 		//---
-		DrawText(TextFormat("[S] Use Templated Sort: %s", s_UseTemplatedSort ? "ON" : "OFF"), 10, 290, 20, GREEN);
-
 		DrawText(TextFormat("[X] Slow Gen Rate: %s", s_SlowGenRate ? "ON" : "OFF"), 10, 350, 20,
 		         s_SlowGenRate ? ORANGE : GREEN);
 		DrawText(TextFormat("[Q] Generate %d objects", ManualObjectPackGenCount), 10, 380, 20, GREEN);
@@ -473,4 +473,3 @@ namespace
 
 	}
 }
-
