@@ -25,37 +25,37 @@ namespace
 	void update();
 	void render();
 
-	float s_TimeSinceStart = 0.0f;
+	f32 s_TimeSinceStart = 0.0f;
 
-	uint64_t s_TotalObjectsCreated = 0;
+	i64 s_TotalObjectsCreated = 0;
 
 	bool s_SlowGenRate = false;
 	bool s_AutoGenMode = false;
-	float s_TimeSinceLastGen = 0.0f;
+	f32 s_TimeSinceLastGen = 0.0f;
 
-	std::vector<vsb::vector<int>> s_GarbageArrays {};
+	std::vector<vsb::vector<i32>> s_GarbageArrays {};
 	std::vector<FlyingCirclePtr> s_Circles {};
 
 	std::vector<SortableCircle> s_CurFrameCircles {};
-	uint64_t s_CurFrameMaxCircleCount = 0;
-	uint64_t s_CurFrameMaxValueCount = 0;
+	u64 s_CurFrameMaxCircleCount = 0;
+	u64 s_CurFrameMaxValueCount = 0;
 
-	uint64_t s_CurFrameCurCircleCount = 0;
-	uint64_t s_CurFrameCurValueCount = 0;
+	u64 s_CurFrameCurCircleCount = 0;
+	u64 s_CurFrameCurValueCount = 0;
 	
 
-	uint64_t s_LastUpdateMicros = 0;
-	constexpr int LastUpdateTimesCount = 180;
-	std::array<uint64_t, LastUpdateTimesCount> s_UpdateTimesHistory {};
-	int s_UpdateTimesIndex = 0;
+	u64 s_LastUpdateMicros = 0;
+	constexpr i32 LastUpdateTimesCount = 180;
+	std::array<u64, LastUpdateTimesCount> s_UpdateTimesHistory {};
+	i32 s_UpdateTimesIndex = 0;
 
-	uint64_t s_LastRenderMicros = 0;
-	constexpr int LastRenderTimesCount = LastUpdateTimesCount;
-	std::array<uint64_t, LastRenderTimesCount> s_RenderTimesHistory {};
-	int s_RenderTimesIndex = 0;
+	u64 s_LastRenderMicros = 0;
+	constexpr i32 LastRenderTimesCount = LastUpdateTimesCount;
+	std::array<u64, LastRenderTimesCount> s_RenderTimesHistory {};
+	i32 s_RenderTimesIndex = 0;
 
-	uint64_t s_AutoGenBaseCount = 1000;
-	uint64_t s_AutoGenRange = 1500;
+	i64 s_AutoGenBaseCount = 1000;
+	i64 s_AutoGenRange = 1500;
 
 	Shader s_CurShader;
 
@@ -66,7 +66,7 @@ namespace
 
 	void add_circle()
 	{
-		const float lifetime = GetRandomFloat01() < LongLifeChance
+		const f32 lifetime = GetRandomFloat01() < LongLifeChance
 			? GetRandomFloat(LongLifetimeMin, LongLifetimeMax)
 			: GetRandomFloat(RegularLifetimeMin, RegularLifetimeMax);
 
@@ -84,23 +84,36 @@ namespace
 		}
 
 		// Adjust auto gen base count with Left/Right arrows
+		bool isShiftPressed = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+
 		if (IsKeyPressed(KEY_LEFT))
 		{
-			s_AutoGenBaseCount = std::max(static_cast<uint64_t>(0), s_AutoGenBaseCount - 100);
+			const i64 delta = isShiftPressed ? 1000 : 100;
+			s_AutoGenBaseCount -= delta;
+			s_AutoGenBaseCount = std::max<i64>(0, s_AutoGenBaseCount);
 		}
 		if (IsKeyPressed(KEY_RIGHT))
 		{
-			s_AutoGenBaseCount += 100;
+			const i64 delta = isShiftPressed ? 1000 : 100;
+			s_AutoGenBaseCount += delta;
 		}
 
 		// Adjust auto gen range with Up/Down arrows
+
+
 		if (IsKeyPressed(KEY_UP))
 		{
-			s_AutoGenRange += 100;
+			i64 delta = isShiftPressed ? 1000 : 100;
+
+			s_AutoGenRange += delta;
 		}
 		if (IsKeyPressed(KEY_DOWN))
 		{
-			s_AutoGenRange = std::max(static_cast<uint64_t>(100), s_AutoGenRange - 100);
+			i64 delta = isShiftPressed ? 1000 : 100;
+
+			s_AutoGenRange -= delta;
+
+			s_AutoGenRange = std::max<i64>(0, s_AutoGenRange);
 		}
 
 		// Toggle slow generation rate
@@ -113,7 +126,9 @@ namespace
 		// Generate a pack of objects instantly
 		if (IsKeyPressed(KEY_Q))
 		{
-			for (int i = 0; i < ManualObjectPackGenCount; i++)
+			const i32 toAdd = isShiftPressed ? ManualObjectPackGenCount * 10 : ManualObjectPackGenCount;
+
+			for (i32 i = 0; i < toAdd; i++)
 			{
 				add_circle();
 			}
@@ -129,8 +144,8 @@ namespace
 
 	void process_auto_gen()
 	{
-		size_t autoGenMin = s_AutoGenBaseCount;
-		size_t autoGenMax = s_AutoGenBaseCount + s_AutoGenRange;
+		u64 autoGenMin = s_AutoGenBaseCount;
+		u64 autoGenMax = s_AutoGenBaseCount + s_AutoGenRange;
 
 		if (s_Circles.size() <= autoGenMin && s_SlowGenRate)
 		{
@@ -144,7 +159,7 @@ namespace
 	}
 
 
-	void process_circles_gen(const float timeDelta)
+	void process_circles_gen(const f32 timeDelta)
 	{
 		// Determine if we should spawn this frame
 		bool shouldSpawn = true;
@@ -164,7 +179,7 @@ namespace
 
 		if (shouldSpawn)
 		{
-			for (int i = 0; i < ObjectsPerFrame; i++)
+			for (i32 i = 0; i < ObjectsPerFrame; i++)
 			{
 				add_circle();
 			}
@@ -172,13 +187,13 @@ namespace
 	}
 
 
-	void circles_update(const float timeDelta)
+	void circles_update(const f32 timeDelta)
 	{
-		const int count = static_cast<int>(s_Circles.size());
+		const i32 count = static_cast<i32>(s_Circles.size());
 
 		bool hasRemovals = false;
 
-		for (int i = count - 1; i >= 0; i--)
+		for (i32 i = count - 1; i >= 0; i--)
 		{
 			auto* pCircle = s_Circles[i].Get();
 			pCircle->Update(timeDelta);
@@ -218,7 +233,7 @@ namespace
 	void per_frame_circles_processing()
 	{
 		//Per frame circles processing
-		for (int i = 0; i < static_cast<int>(s_Circles.size()); i++)
+		for (i32 i = 0; i < static_cast<i32>(s_Circles.size()); i++)
 		{
 			auto* circle = s_Circles[i].Get();
 
@@ -261,7 +276,7 @@ namespace
 }
 
 
-int main()
+i32 main()
 {
 	log::Init(true, "flying_circles.log");
 	VSBLOG_INFO("");
@@ -325,7 +340,7 @@ namespace
 {
 	void update()
 	{
-		float const dt = GetFrameTime();
+		f32 const dt = GetFrameTime();
 		s_TimeSinceStart += dt;
 
 		process_inputs();
@@ -340,9 +355,9 @@ namespace
 
 
 		//doing some garbage
-		const int garbageArraySize = GetRandomValue(5, 100);
+		const i32 garbageArraySize = GetRandomValue(5, 100);
 
-		vsb::vector<int> garbageArray(garbageArraySize, 0);
+		vsb::vector<i32> garbageArray(garbageArraySize, 0);
 		s_GarbageArrays.push_back(std::move(garbageArray));
 
 		if (s_GarbageArrays.size() > 100)
@@ -362,12 +377,12 @@ namespace
 	}
 
 
-	const char* FormatTimeHMS(float timeSinceStart)
+	const char* FormatTimeHMS(f32 timeSinceStart)
 	{
-		int totalSeconds = static_cast<int>(timeSinceStart);
-		int hours = totalSeconds / 3600;
-		int minutes = (totalSeconds % 3600) / 60;
-		int seconds = totalSeconds % 60;
+		i32 totalSeconds = static_cast<i32>(timeSinceStart);
+		i32 hours = totalSeconds / 3600;
+		i32 minutes = (totalSeconds % 3600) / 60;
+		i32 seconds = totalSeconds % 60;
 		return TextFormat("%d:%02d:%02d", hours, minutes, seconds);
 	}
 
@@ -401,32 +416,32 @@ namespace
 
 		// Update time bars: 1 pixel = 10 microseconds
 		// Draw all historical bars with low alpha (ghosted)
-		uint64_t maxUpdateTime = 0;
-		for (int i = 0; i < LastUpdateTimesCount; i++)
+		u64 maxUpdateTime = 0;
+		for (i32 i = 0; i < LastUpdateTimesCount; i++)
 		{
 			if (s_UpdateTimesHistory[i] > maxUpdateTime)
 				maxUpdateTime = s_UpdateTimesHistory[i];
 		}
 
-		uint64_t maxRenderTime = 0;
-		for (int i = 0; i < LastRenderTimesCount; i++)
+		u64 maxRenderTime = 0;
+		for (i32 i = 0; i < LastRenderTimesCount; i++)
 		{
 			if (s_RenderTimesHistory[i] > maxRenderTime)
 				maxRenderTime = s_RenderTimesHistory[i];
 		}
 
-		int maxBarWidth = static_cast<int>(maxUpdateTime / 10);
+		i32 maxBarWidth = static_cast<i32>(maxUpdateTime / 10);
 		constexpr Color maxColor(255, 0, 0, 80);
 		DrawRectangle(10, 70, maxBarWidth, 16, maxColor);
 
-		for (int i = 0; i < LastUpdateTimesCount; i++)
+		for (i32 i = 0; i < LastUpdateTimesCount; i++)
 		{
 			constexpr Color ghostColor = {135, 206, 235, 25};
-			const int barWidth = static_cast<int>(s_UpdateTimesHistory[i] / 10);
+			const i32 barWidth = static_cast<i32>(s_UpdateTimesHistory[i] / 10);
 			DrawRectangle(10, 70, barWidth, 16, ghostColor);
 		}
 		// Draw the current bar on top with full color
-		const int updateBarWidth = static_cast<int>(s_LastUpdateMicros / 10);
+		const i32 updateBarWidth = static_cast<i32>(s_LastUpdateMicros / 10);
 		DrawRectangle(10, 70, updateBarWidth, 16, SKYBLUE);
 
 		//update and render times
@@ -434,9 +449,9 @@ namespace
 		DrawText(TextFormat("Render time: %i", maxRenderTime), 10, 150, 20, WHITE);
 
 		//target fps
-		const int64_t fullFrameTime = static_cast<int64_t>(1 + maxUpdateTime + maxRenderTime);
+		const i64 fullFrameTime = static_cast<i64>(1 + maxUpdateTime + maxRenderTime);
 
-		const int64_t targetFps = 1'000'000 / fullFrameTime;
+		const i64 targetFps = 1'000'000 / fullFrameTime;
 
 		constexpr Color TargetFPSColor(10, 150, 10, 180);
 
@@ -448,8 +463,8 @@ namespace
 		         s_SlowGenRate ? ORANGE : GREEN);
 		DrawText(TextFormat("[Q] Generate %d objects", ManualObjectPackGenCount), 10, 380, 20, GREEN);
 
-		int autoGenMin = static_cast<int>(s_AutoGenBaseCount);
-		int autoGenMax = static_cast<int>(s_AutoGenBaseCount + s_AutoGenRange);
+		i32 autoGenMin = static_cast<i32>(s_AutoGenBaseCount);
+		i32 autoGenMax = static_cast<i32>(s_AutoGenBaseCount + s_AutoGenRange);
 		DrawText(TextFormat("[A] Auto Gen (%d - %d): %s", autoGenMin, autoGenMax, s_AutoGenMode ? "ON" : "OFF"), 10,
 		         410, 20,
 		         s_AutoGenMode ? ORANGE : GREEN);

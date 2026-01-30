@@ -86,19 +86,36 @@ namespace vsb
 
 		explicit operator bool() const
 		{
+#ifdef VSB_PTR_VALIDATE
+			if (m_pointer != nullptr)
+			{
+				PTR_HANDLE_CHECK;
+			}
+#endif
 			return m_pointer != nullptr;
 		}
 
 
 		[[nodiscard]] bool IsEmpty() const
 		{
+#ifdef VSB_PTR_VALIDATE
+			if (m_pointer != nullptr)
+			{
+				PTR_HANDLE_CHECK;
+			}
+#endif
 			return m_pointer == nullptr;
 		}
 
 
 		[[nodiscard]] bool IsValid() const
 		{
-			PTR_HANDLE_CHECK;
+#ifdef VSB_PTR_VALIDATE
+			if (m_pointer != nullptr)
+			{
+				PTR_HANDLE_CHECK;
+			}
+#endif
 			return m_pointer != nullptr;
 		}
 
@@ -114,7 +131,7 @@ namespace vsb
 
 		T* Get() const
 		{
-#ifdef DEBUG
+#ifdef VSB_PTR_VALIDATE
 			if (m_pointer != nullptr)
 			{
 				PTR_HANDLE_CHECK;

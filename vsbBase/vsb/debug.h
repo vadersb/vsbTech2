@@ -41,6 +41,8 @@
 
 namespace vsb::debug
 {
+	std::thread::id GetMainThreadID();
+	void SingleThreadCheckInit();
 	void SingleThreadCheck(std::string_view detail);
 }
 

@@ -11,14 +11,26 @@
 
 namespace vsb::debug
 {
+	static std::thread::id s_MainThreadID{};
+
+	std::thread::id GetMainThreadID()
+	{
+		return s_MainThreadID;
+	}
+
+
+	void SingleThreadCheckInit()
+	{
+		s_MainThreadID = std::this_thread::get_id();
+	}
+
+
 	void SingleThreadCheck(std::string_view detail)
 	{
-		static const std::thread::id threadId = std::this_thread::get_id();
-
-		if (threadId != std::this_thread::get_id())
+		if (s_MainThreadID != std::this_thread::get_id())
 		{
 			VSBLOG_ERROR("Single-thread violation! Expected thread: {}, Current thread: {}, Detail: {}",
-						 std::hash<std::thread::id>{}(threadId),
+						 std::hash<std::thread::id>{}(s_MainThreadID),
 						 std::hash<std::thread::id>{}(std::this_thread::get_id()),
 						 detail);
 			VSB_BREAK

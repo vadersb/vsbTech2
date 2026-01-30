@@ -12,6 +12,7 @@ namespace vsb
 {
 	void VSBInit()
 	{
+		debug::SingleThreadCheckInit();
 		memory::SingleThreadedPool::Init();
 		internal::ObjectRegistry::Init();
 		DestructionCentral::InitDefault();
