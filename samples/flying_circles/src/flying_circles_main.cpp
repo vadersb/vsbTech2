@@ -25,15 +25,15 @@ namespace
 	void update();
 	void render();
 
-	f32 s_TimeSinceStart = 0.0f;
+	float s_TimeSinceStart = 0.0f;
 
 	i64 s_TotalObjectsCreated = 0;
 
 	bool s_SlowGenRate = false;
 	bool s_AutoGenMode = false;
-	f32 s_TimeSinceLastGen = 0.0f;
+	float s_TimeSinceLastGen = 0.0f;
 
-	std::vector<vsb::vector<i32>> s_GarbageArrays {};
+	std::vector<vsb::vector<int>> s_GarbageArrays {};
 	std::vector<FlyingCirclePtr> s_Circles {};
 
 	std::vector<SortableCircle> s_CurFrameCircles {};
@@ -45,14 +45,14 @@ namespace
 	
 
 	u64 s_LastUpdateMicros = 0;
-	constexpr i32 LastUpdateTimesCount = 180;
+	constexpr int LastUpdateTimesCount = 180;
 	std::array<u64, LastUpdateTimesCount> s_UpdateTimesHistory {};
-	i32 s_UpdateTimesIndex = 0;
+	int s_UpdateTimesIndex = 0;
 
 	u64 s_LastRenderMicros = 0;
-	constexpr i32 LastRenderTimesCount = LastUpdateTimesCount;
+	constexpr int LastRenderTimesCount = LastUpdateTimesCount;
 	std::array<u64, LastRenderTimesCount> s_RenderTimesHistory {};
-	i32 s_RenderTimesIndex = 0;
+	int s_RenderTimesIndex = 0;
 
 	i64 s_AutoGenBaseCount = 1000;
 	i64 s_AutoGenRange = 1500;
@@ -66,7 +66,7 @@ namespace
 
 	void add_circle()
 	{
-		const f32 lifetime = GetRandomFloat01() < LongLifeChance
+		const float lifetime = GetRandomFloat01() < LongLifeChance
 			? GetRandomFloat(LongLifetimeMin, LongLifetimeMax)
 			: GetRandomFloat(RegularLifetimeMin, RegularLifetimeMax);
 
@@ -126,9 +126,9 @@ namespace
 		// Generate a pack of objects instantly
 		if (IsKeyPressed(KEY_Q))
 		{
-			const i32 toAdd = isShiftPressed ? ManualObjectPackGenCount * 10 : ManualObjectPackGenCount;
+			const int toAdd = isShiftPressed ? ManualObjectPackGenCount * 10 : ManualObjectPackGenCount;
 
-			for (i32 i = 0; i < toAdd; i++)
+			for (int i = 0; i < toAdd; i++)
 			{
 				add_circle();
 			}
@@ -159,7 +159,7 @@ namespace
 	}
 
 
-	void process_circles_gen(const f32 timeDelta)
+	void process_circles_gen(const float timeDelta)
 	{
 		// Determine if we should spawn this frame
 		bool shouldSpawn = true;
@@ -179,7 +179,7 @@ namespace
 
 		if (shouldSpawn)
 		{
-			for (i32 i = 0; i < ObjectsPerFrame; i++)
+			for (int i = 0; i < ObjectsPerFrame; i++)
 			{
 				add_circle();
 			}
@@ -187,13 +187,13 @@ namespace
 	}
 
 
-	void circles_update(const f32 timeDelta)
+	void circles_update(const float timeDelta)
 	{
-		const i32 count = static_cast<i32>(s_Circles.size());
+		const int count = static_cast<int>(s_Circles.size());
 
 		bool hasRemovals = false;
 
-		for (i32 i = count - 1; i >= 0; i--)
+		for (int i = count - 1; i >= 0; i--)
 		{
 			auto* pCircle = s_Circles[i].Get();
 			pCircle->Update(timeDelta);
@@ -233,7 +233,7 @@ namespace
 	void per_frame_circles_processing()
 	{
 		//Per frame circles processing
-		for (i32 i = 0; i < static_cast<i32>(s_Circles.size()); i++)
+		for (int i = 0; i < static_cast<int>(s_Circles.size()); i++)
 		{
 			auto* circle = s_Circles[i].Get();
 
@@ -276,7 +276,7 @@ namespace
 }
 
 
-i32 main()
+int main()
 {
 	log::Init(true, "flying_circles.log");
 	VSBLOG_INFO("");
@@ -340,7 +340,7 @@ namespace
 {
 	void update()
 	{
-		f32 const dt = GetFrameTime();
+		float const dt = GetFrameTime();
 		s_TimeSinceStart += dt;
 
 		process_inputs();
@@ -355,9 +355,9 @@ namespace
 
 
 		//doing some garbage
-		const i32 garbageArraySize = GetRandomValue(5, 100);
+		const int garbageArraySize = GetRandomValue(5, 100);
 
-		vsb::vector<i32> garbageArray(garbageArraySize, 0);
+		vsb::vector<int> garbageArray(garbageArraySize, 0);
 		s_GarbageArrays.push_back(std::move(garbageArray));
 
 		if (s_GarbageArrays.size() > 100)
@@ -377,12 +377,12 @@ namespace
 	}
 
 
-	const char* FormatTimeHMS(f32 timeSinceStart)
+	const char* FormatTimeHMS(float timeSinceStart)
 	{
-		i32 totalSeconds = static_cast<i32>(timeSinceStart);
-		i32 hours = totalSeconds / 3600;
-		i32 minutes = (totalSeconds % 3600) / 60;
-		i32 seconds = totalSeconds % 60;
+		int totalSeconds = static_cast<int>(timeSinceStart);
+		int hours = totalSeconds / 3600;
+		int minutes = (totalSeconds % 3600) / 60;
+		int seconds = totalSeconds % 60;
 		return TextFormat("%d:%02d:%02d", hours, minutes, seconds);
 	}
 
@@ -417,31 +417,31 @@ namespace
 		// Update time bars: 1 pixel = 10 microseconds
 		// Draw all historical bars with low alpha (ghosted)
 		u64 maxUpdateTime = 0;
-		for (i32 i = 0; i < LastUpdateTimesCount; i++)
+		for (int i = 0; i < LastUpdateTimesCount; i++)
 		{
 			if (s_UpdateTimesHistory[i] > maxUpdateTime)
 				maxUpdateTime = s_UpdateTimesHistory[i];
 		}
 
 		u64 maxRenderTime = 0;
-		for (i32 i = 0; i < LastRenderTimesCount; i++)
+		for (int i = 0; i < LastRenderTimesCount; i++)
 		{
 			if (s_RenderTimesHistory[i] > maxRenderTime)
 				maxRenderTime = s_RenderTimesHistory[i];
 		}
 
-		i32 maxBarWidth = static_cast<i32>(maxUpdateTime / 10);
+		int maxBarWidth = static_cast<int>(maxUpdateTime / 10);
 		constexpr Color maxColor(255, 0, 0, 80);
 		DrawRectangle(10, 70, maxBarWidth, 16, maxColor);
 
-		for (i32 i = 0; i < LastUpdateTimesCount; i++)
+		for (int i = 0; i < LastUpdateTimesCount; i++)
 		{
 			constexpr Color ghostColor = {135, 206, 235, 25};
-			const i32 barWidth = static_cast<i32>(s_UpdateTimesHistory[i] / 10);
+			const int barWidth = static_cast<int>(s_UpdateTimesHistory[i] / 10);
 			DrawRectangle(10, 70, barWidth, 16, ghostColor);
 		}
 		// Draw the current bar on top with full color
-		const i32 updateBarWidth = static_cast<i32>(s_LastUpdateMicros / 10);
+		const int updateBarWidth = static_cast<int>(s_LastUpdateMicros / 10);
 		DrawRectangle(10, 70, updateBarWidth, 16, SKYBLUE);
 
 		//update and render times
@@ -463,8 +463,8 @@ namespace
 		         s_SlowGenRate ? ORANGE : GREEN);
 		DrawText(TextFormat("[Q] Generate %d objects", ManualObjectPackGenCount), 10, 380, 20, GREEN);
 
-		i32 autoGenMin = static_cast<i32>(s_AutoGenBaseCount);
-		i32 autoGenMax = static_cast<i32>(s_AutoGenBaseCount + s_AutoGenRange);
+		int autoGenMin = static_cast<int>(s_AutoGenBaseCount);
+		int autoGenMax = static_cast<int>(s_AutoGenBaseCount + s_AutoGenRange);
 		DrawText(TextFormat("[A] Auto Gen (%d - %d): %s", autoGenMin, autoGenMax, s_AutoGenMode ? "ON" : "OFF"), 10,
 		         410, 20,
 		         s_AutoGenMode ? ORANGE : GREEN);

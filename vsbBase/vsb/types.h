@@ -7,15 +7,15 @@
 
 namespace vsb
 {
-	using i8  = std::int8_t;
+	using i8  = std::int8_t;   //essential (char has varying signedness)
 	using i16 = std::int16_t;
 	using i32 = std::int32_t;
-	using i64 = std::int64_t;
+	using i64 = std::int64_t;  //essential (long has varying size)
 
-	using u8  = std::uint8_t;
+	using u8  = std::uint8_t;  //essential (char has varying signedness)
 	using u16 = std::uint16_t;
 	using u32 = std::uint32_t;
-	using u64 = std::uint64_t;
+	using u64 = std::uint64_t; //essential (long has varying size)
 
 	using f32 = float;   // IEEE 754 single - reliably 32-bit in practice
 	using f64 = double;  // IEEE 754 double - reliably 64-bit in practice

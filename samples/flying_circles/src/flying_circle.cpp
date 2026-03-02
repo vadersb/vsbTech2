@@ -10,7 +10,7 @@
 #include "algorithm"
 #include "rlgl.h"
 
-FlyingCircle::FlyingCircle(f32 lifetime, i32 minArraySize, i32 maxArraySize, const std::vector<vsb::Ptr<FlyingCircle>>& allCircles) :
+FlyingCircle::FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<vsb::Ptr<FlyingCircle>>& allCircles) :
 	m_x(fc_utils::GetRandomFloat(0.0f, params::WindowWidth)),
 	m_y(fc_utils::GetRandomFloat(0.0f, params::WindowHeight)),
 	m_velX((fc_utils::GetRandomFloat01() - 0.5f) * 100.0f),
@@ -63,7 +63,7 @@ void FlyingCircle::operator delete(void* ptr, std::size_t size) noexcept
 }
 
 
-void FlyingCircle::Update(const f32 dt)
+void FlyingCircle::Update(const float dt)
 {
 	m_age += dt;
 

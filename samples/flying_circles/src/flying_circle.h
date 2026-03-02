@@ -22,7 +22,7 @@ class FlyingCircle : public vsb::ManagedObject
 public:
 
 
-	FlyingCircle(f32 lifetime, i32 minArraySize, i32 maxArraySize, const std::vector<FlyingCirclePtr>& allCircles);
+	FlyingCircle(float lifetime, int minArraySize, int maxArraySize, const std::vector<FlyingCirclePtr>& allCircles);
 	~FlyingCircle() override = default;
 
 	void* operator new(std::size_t size);
@@ -63,18 +63,18 @@ private:
 	static constexpr int MaxOtherCircles = 32;
 
 
-	f32 m_x;
-	f32 m_y;
-	f32 m_velX;
-	f32 m_velY;
+	float m_x;
+	float m_y;
+	float m_velX;
+	float m_velY;
 
-	f32 m_radius;
+	float m_radius;
 
 	Color m_baseColor {};
 
-	f32 m_lifetime;
-	f32 m_age {0.0f};
+	float m_lifetime;
+	float m_age {0.0f};
 
-	vsb::vector<i32> m_garbageArray {};
+	vsb::vector<int> m_garbageArray {};
 	vsb::vector<vsb::SafePtr<FlyingCircle>> m_otherCircles {};
 };
