@@ -6,6 +6,7 @@
 #include "vsb.h"
 #include "memory/single_threaded_allocator.h"
 #include "objects/destruction_central.h"
+#include "objects/singleton.h"
 #include "vsb/objects/internal/object_registry.h"
 
 namespace vsb
@@ -16,5 +17,14 @@ namespace vsb
 		memory::SingleThreadedPool::Init();
 		internal::ObjectRegistry::Init();
 		DestructionCentral::InitDefault();
+	}
+
+
+	void VSBUninit()
+	{
+		DestructionCentral::Uninit();
+		SingletonBase::DestroyAllSingletons();
+		internal::ObjectRegistry::WrapUp();
+		vsb::log::Uninit();
 	}
 }

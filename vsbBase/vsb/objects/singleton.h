@@ -57,8 +57,10 @@ namespace vsb
 
 		static TSingleton& GetInstance()
 		{
-			VSB_ASSERT(s_isInitialized, "Singleton is not initialized!");
-			VSB_ASSERT(s_pInstance != nullptr, "Singleton instance is null!");
+			if (!s_isInitialized)
+			{
+				Init();
+			}
 			return *s_pInstance;
 		}
 

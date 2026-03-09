@@ -24,14 +24,7 @@ int main(int argc, char* argv[])
     // === TEARDOWN ===
     // This runs BEFORE any static destructors!
     VSBLOG_INFO("Global test setup uninit");
-    vsb::DestructionCentral::Uninit();
-    vsb::SingletonBase::DestroyAllSingletons();
-
-    {
-        vsb::internal::ObjectRegistryFinalizer const finalizer;
-    }
-
-    vsb::log::Uninit();
+    vsb::VSBUninit();
 
     return result;
 }

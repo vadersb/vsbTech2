@@ -7,4 +7,5 @@
 namespace vsb
 {
 	void VSBInit();
+	void VSBUninit();
 }

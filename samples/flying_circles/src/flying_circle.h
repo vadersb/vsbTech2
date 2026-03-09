@@ -56,8 +56,8 @@ private:
 	void UpdateOtherCirclesList();
 
 
-	static constexpr float FadeInDuration = 1.0f;
-	static constexpr float FadeOutDuration = 1.0f;
+	static constexpr float FadeInDuration = 2.0f;
+	static constexpr float FadeOutDuration = 5.0f;
 
 	static constexpr int MinOtherCircles = 2;
 	static constexpr int MaxOtherCircles = 32;

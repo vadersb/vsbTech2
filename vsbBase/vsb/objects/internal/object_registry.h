@@ -14,6 +14,7 @@ namespace vsb
 	template<typename T> class Ptr;
 	template<typename T> class SafePtr;
 	void VSBInit();
+	void VSBUninit();
 }
 
 namespace vsb::internal
@@ -35,6 +36,7 @@ namespace vsb::internal
 		template<typename T> friend class vsb::Ptr;
 		template<typename T> friend class vsb::SafePtr;
 		friend void vsb::VSBInit();
+		friend void vsb::VSBUninit();
 
 	public:
 

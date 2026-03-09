@@ -330,9 +330,7 @@ int main()
 	UnloadShader(s_AltCircleShader);
 	CloseWindow();
 
-	DestructionCentral::Uninit();
-
-	log::Uninit();
+	VSBUninit();
 }
 
 
