@@ -8,7 +8,7 @@
 
 namespace vsb
 {
-	std::vector<DestructionCentral::DestructionListBase*> DestructionCentral::s_DestructionLists {};
+	std::vector<DestructionCentral::DestructionListBase*> DestructionCentral::s_destructionLists {};
 
 
 	void DestructionCentral::ProcessDefault()
@@ -23,7 +23,7 @@ namespace vsb
 		{
 			bool hadAnyDeletions = false;
 
-			for (auto* pDestructionList: s_DestructionLists)
+			for (auto* pDestructionList: s_destructionLists)
 			{
 				if (pDestructionList->Process())
 				{

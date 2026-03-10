@@ -65,9 +65,9 @@ namespace vsb
 
 			DestructionList()
 			{
-				s_DestructionLists.push_back(this);
-				m_ObjectsToDestroy.reserve(1024);
-				m_ObjectsToDestroyExtra.reserve(128);
+				s_destructionLists.push_back(this);
+				m_objectsToDestroy.reserve(1024);
+				m_objectsToDestroyExtra.reserve(128);
 
 				s_pInstance = this;
 			}
@@ -81,13 +81,13 @@ namespace vsb
 
 			void Add(ManagedObject* pObject)
 			{
-				if (m_TargetMainList)
+				if (m_targetMainList)
 				{
-					m_ObjectsToDestroy.push_back(pObject);
+					m_objectsToDestroy.push_back(pObject);
 				}
 				else
 				{
-					m_ObjectsToDestroyExtra.push_back(pObject);
+					m_objectsToDestroyExtra.push_back(pObject);
 				}
 			}
 
@@ -96,49 +96,49 @@ namespace vsb
 			{
 				bool hadAnyDeletions = false;
 
-				if (m_IsProcessing)
+				if (m_isProcessing)
 				{
 					VSBLOG_ERROR("DestructionList::Process called while already processing");
 					return false;
 				}
 
-				m_IsProcessing = true;
+				m_isProcessing = true;
 
 				while (true)
 				{
 					//main list
-					m_TargetMainList = false;
+					m_targetMainList = false;
 
 					bool hadDeletions = false;
 
-					if (m_ObjectsToDestroy.empty() == false)
+					if (m_objectsToDestroy.empty() == false)
 					{
 						hadDeletions = true;
 						hadAnyDeletions = true;
 
-						for (auto* pObject: m_ObjectsToDestroy)
+						for (auto* pObject: m_objectsToDestroy)
 						{
 							DestroyObject(pObject);
 						}
 
-						m_ObjectsToDestroy.clear();
+						m_objectsToDestroy.clear();
 					}
 
 
 					//extra list
-					m_TargetMainList = true;
+					m_targetMainList = true;
 
-					if (m_ObjectsToDestroyExtra.empty() == false)
+					if (m_objectsToDestroyExtra.empty() == false)
 					{
 						hadDeletions = true;
 						hadAnyDeletions = true;
 
-						for (auto* pObject: m_ObjectsToDestroyExtra)
+						for (auto* pObject: m_objectsToDestroyExtra)
 						{
 							DestroyObject(pObject);
 						}
 
-						m_ObjectsToDestroyExtra.clear();
+						m_objectsToDestroyExtra.clear();
 					}
 
 
@@ -148,7 +148,7 @@ namespace vsb
 					}
 				}
 
-				m_IsProcessing = false;
+				m_isProcessing = false;
 
 				return hadAnyDeletions;
 			}
@@ -171,10 +171,10 @@ namespace vsb
 
 		private:
 
-			bool m_IsProcessing = false;
-			bool m_TargetMainList = true;
-			std::vector<ManagedObject*> m_ObjectsToDestroy {};
-			std::vector<ManagedObject*> m_ObjectsToDestroyExtra {};
+			bool m_isProcessing = false;
+			bool m_targetMainList = true;
+			std::vector<ManagedObject*> m_objectsToDestroy {};
+			std::vector<ManagedObject*> m_objectsToDestroyExtra {};
 
 			static inline DestructionList* s_pInstance {nullptr};
 		};
@@ -187,7 +187,7 @@ namespace vsb
 			destructionList.Add(pObject);
 		}
 
-		static std::vector<DestructionListBase*> s_DestructionLists;
+		static std::vector<DestructionListBase*> s_destructionLists;
 
 
 	};
