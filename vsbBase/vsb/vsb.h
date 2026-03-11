@@ -7,5 +7,6 @@
 namespace vsb
 {
 	void VSBInit();
+	bool VSBIsActive();
 	void VSBUninit();
 }

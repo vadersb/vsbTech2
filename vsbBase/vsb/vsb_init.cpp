@@ -11,12 +11,23 @@
 
 namespace vsb
 {
+	static bool s_IsActive = false;
+
 	void VSBInit()
 	{
+		s_IsActive = true;
+#ifdef VSB_SINGLE_THREAD_CHECK
 		debug::SingleThreadCheckInit();
+#endif
 		memory::SingleThreadedPool::Init();
 		internal::ObjectRegistry::Init();
 		DestructionCentral::InitDefault();
+	}
+
+
+	bool VSBIsActive()
+	{
+		return s_IsActive;
 	}
 
 
@@ -26,5 +37,6 @@ namespace vsb
 		SingletonBase::DestroyAllSingletons();
 		internal::ObjectRegistry::WrapUp();
 		vsb::log::Uninit();
+		s_IsActive = false;
 	}
 }
