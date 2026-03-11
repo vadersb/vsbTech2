@@ -5,19 +5,37 @@
 
 #include "string_ids_registry.h"
 
+#include "vsb/debug.h"
+
 
 namespace vsb::internal
 {
-
-
 	StringIDsRegistry::StringIDsRegistry()
 	{
-		m_strings.reserve(1024);
-		m_lookupTable.reserve(1024);
+		m_strings.reserve(ReserveCapacity);
+		m_lookupTable.reserve(ReserveCapacity);
 	}
 
 
-	std::int32_t StringIDsRegistry::RegisterString(std::string_view str, size_t hash)
+	StringIDsRegistry::~StringIDsRegistry()
+	{
+		s_pInstance = nullptr;
+		s_bWasShutDown = true;
+	}
+
+
+	size_t StringIDsRegistry::GetRegisteredIDsCount() noexcept
+	{
+		if (s_pInstance == nullptr)
+		{
+			return 0;
+		}
+
+		return s_pInstance->m_strings.size();
+	}
+
+
+	std::int32_t StringIDsRegistry::RegisterStringInternal(std::string_view str, const size_t hash)
 	{
 		const TempStringID temp {str, hash};
 
@@ -26,8 +44,9 @@ namespace vsb::internal
 			return it->second;
 		}
 
-		auto index = static_cast<std::int32_t>(m_strings.size());
-		m_strings.emplace_back(str);
+	    auto index = static_cast<std::int32_t>(m_strings.size());
+	    VSB_ASSERT(m_strings.size() < static_cast<size_t>(std::numeric_limits<std::int32_t>::max()), "String IDs registry overflow detected");
+	    m_strings.emplace_back(str);
 
 		StringID id;
 		id.m_cachedHash = hash;
@@ -39,14 +58,27 @@ namespace vsb::internal
 	}
 
 
-	StringIDsRegistry& StringIDsRegistry::GetInstance()
+	std::int32_t StringIDsRegistry::RegisterString(std::string_view str, size_t hash)
 	{
-		if (s_pInstance == nullptr)
+		if (s_bWasShutDown)
 		{
-			s_pInstance = GetInstanceInternal();
+			VSB_BREAK;
+			return -1;
 		}
 
-		return *s_pInstance;
+		return GetInstance().RegisterStringInternal(str, hash);
+	}
+
+
+	StringIDsRegistry& StringIDsRegistry::GetInstance()
+	{
+	    if (s_pInstance == nullptr && !s_bWasShutDown)
+	    {
+	        s_pInstance = GetInstanceInternal();
+	    }
+
+	    VSB_ASSERT(s_pInstance != nullptr, "StringIDsRegistry accessed after shutdown");
+	    return *s_pInstance;
 	}
 
 
@@ -57,14 +89,26 @@ namespace vsb::internal
 	}
 
 
-	std::string_view StringIDsRegistry::GetString(const std::int32_t index) const
+	std::string_view StringIDsRegistry::GetStringInternal(const std::int32_t index) const
 	{
-		if (index < 0)
+	    if (index < 0)
+	    {
+	        return "";
+	    }
+
+	    const size_t finalIndex = static_cast<size_t>(index);
+	    VSB_ASSERT(finalIndex < m_strings.size(), "index out of bounds");
+	    return m_strings[finalIndex];
+	}
+
+
+	std::string_view StringIDsRegistry::GetString(const std::int32_t index)
+	{
+		if (s_bWasShutDown)
 		{
-			return "";
+			return "REGISTRY WAS SHUT DOWN";
 		}
 
-		const size_t finalIndex = static_cast<size_t>(index);
-		return m_strings[finalIndex];
+		return GetInstance().GetStringInternal(index);
 	}
 }

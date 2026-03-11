@@ -7,12 +7,10 @@
 
 namespace vsb
 {
-	std::hash<std::string_view> s_StringViewHash;
-
 	StringID::StringID(const std::string_view str)
 	{
-		m_cachedHash = s_StringViewHash(str);
-		m_index = internal::StringIDsRegistry::GetInstance().RegisterString(str, m_cachedHash);
+	    m_cachedHash = std::hash<std::string_view>{}(str);
+	    m_index = internal::StringIDsRegistry::RegisterString(str, m_cachedHash);
 	}
 
 
@@ -23,6 +21,12 @@ namespace vsb
 			return "";
 		}
 
-		return internal::StringIDsRegistry::GetInstance().GetString(m_index);
+		return internal::StringIDsRegistry::GetString(m_index);
+	}
+
+
+	size_t StringID::GetRegisteredIDsCount() noexcept
+	{
+		return internal::StringIDsRegistry::GetRegisteredIDsCount();
 	}
 }

@@ -40,9 +40,9 @@ namespace vsb
 
 		[[nodiscard]] std::string_view GetString() const noexcept;
 
-	private:
+		static size_t GetRegisteredIDsCount() noexcept;
 
-		[[nodiscard]] size_t GetHash() const noexcept {return m_cachedHash;}
+	private:
 
 		size_t m_cachedHash {0};
 		std::int32_t m_index {-1};
@@ -59,6 +59,6 @@ struct std::hash<vsb::StringID>
 {
 	size_t operator()(const vsb::StringID &stringID) const noexcept
 	{
-		return stringID.GetHash();
+		return stringID.m_cachedHash;
 	}
 };

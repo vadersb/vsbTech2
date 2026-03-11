@@ -14,12 +14,16 @@ namespace vsb::internal
 {
 	class StringIDsRegistry
 	{
+		constexpr static size_t ReserveCapacity = 1024 * 10;
 
 		friend class vsb::StringID;
 
 	private:
 
 		StringIDsRegistry();
+		~StringIDsRegistry();
+
+		static size_t GetRegisteredIDsCount() noexcept;
 
 		struct TempStringID
 		{
@@ -33,7 +37,7 @@ namespace vsb::internal
 
 			size_t operator()(const StringID& id) const noexcept
 			{
-				return id.GetHash();
+				return id.m_cachedHash;
 			}
 
 			size_t operator()(const TempStringID& tmp) const noexcept
@@ -62,15 +66,18 @@ namespace vsb::internal
 			}
 		};
 
-		std::int32_t RegisterString(std::string_view str, size_t hash);
+		std::int32_t RegisterStringInternal(std::string_view str, size_t hash);
+		static std::int32_t RegisterString(std::string_view str, size_t hash);
 
 		inline static StringIDsRegistry* s_pInstance {nullptr};
+		inline static bool s_bWasShutDown {false};
 
 		static StringIDsRegistry& GetInstance();
 		static StringIDsRegistry* GetInstanceInternal() noexcept;
 
 
-		[[nodiscard]] std::string_view GetString(std::int32_t index) const;
+		[[nodiscard]] std::string_view GetStringInternal(std::int32_t index) const;
+		static std::string_view GetString(std::int32_t index);
 
 		std::vector<std::string> m_strings {};
 		std::unordered_map<StringID, std::int32_t, TransparentHash, TransparentEqual> m_lookupTable {};
