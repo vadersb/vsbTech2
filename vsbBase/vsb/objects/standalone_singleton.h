@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vsb/vsb_settings.h>
 #include "vsb/debug.h"
 
 namespace vsb
@@ -21,6 +22,12 @@ namespace vsb
 			StandaloneSingletonBase()
 			{
 				s_CurrentCount++;
+#ifdef VSB_SINGLE_THREAD_CHECK
+				if (s_CurrentCount == 1)
+				{
+					s_MainThreadID = std::this_thread::get_id();
+				}
+#endif
 			}
 
 			~StandaloneSingletonBase()
@@ -28,8 +35,20 @@ namespace vsb
 				s_CurrentCount--;
 			}
 
+#ifdef VSB_SINGLE_THREAD_CHECK
+			static void CheckThreadAccess()
+			{
+				const auto currentThread = std::this_thread::get_id();
+				const bool sameThread = currentThread == s_MainThreadID;
+				VSB_ASSERT(sameThread, "Singleton is not thread safe");
+			}
+#endif
 
 		private:
+
+#ifdef VSB_SINGLE_THREAD_CHECK
+			inline static std::thread::id s_MainThreadID;
+#endif
 
 			inline static int s_CurrentCount {0};
 		};
@@ -40,6 +59,11 @@ namespace vsb
 	class StandaloneSingleton : public internal::StandaloneSingletonBase
 	{
 	public:
+
+		StandaloneSingleton(const StandaloneSingleton&) = delete;
+		StandaloneSingleton& operator=(const StandaloneSingleton&) = delete;
+		StandaloneSingleton(StandaloneSingleton&&) = delete;
+		StandaloneSingleton& operator=(StandaloneSingleton&&) = delete;
 
 		[[nodiscard]] static TSingleton* GetInstance() requires publicInstanceAccess
 		{
@@ -77,11 +101,6 @@ namespace vsb
 			s_WasShutDown = true;
 		}
 
-		StandaloneSingleton(const StandaloneSingleton&) = delete;
-		StandaloneSingleton& operator=(const StandaloneSingleton&) = delete;
-		StandaloneSingleton(StandaloneSingleton&&) = delete;
-		StandaloneSingleton& operator=(StandaloneSingleton&&) = delete;
-
 	private:
 
 		static TSingleton* GetInstanceImpl()
@@ -98,6 +117,10 @@ namespace vsb
 				Instantiate();
 			}
 
+#ifdef VSB_SINGLE_THREAD_CHECK
+			CheckThreadAccess();
+#endif
+
 			return s_pInstance;
 		}
 
@@ -109,5 +132,8 @@ namespace vsb
 
 		static inline TSingleton* s_pInstance {nullptr};
 		static inline bool s_WasShutDown {false};
+
+
+
 	};
 }

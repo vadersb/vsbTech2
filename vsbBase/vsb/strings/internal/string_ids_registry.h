@@ -9,19 +9,20 @@
 #include <functional>
 
 #include "vsb/strings/string_id.h"
+#include "vsb/objects/standalone_singleton.h"
 
 namespace vsb::internal
 {
-	class StringIDsRegistry
+	class StringIDsRegistry : public StandaloneSingleton<StringIDsRegistry, false>
 	{
-		constexpr static size_t ReserveCapacity = 1024 * 10;
+		constexpr static size_t ReserveCapacity = 1024 * 16;
 
 		friend class vsb::StringID;
-
-	private:
+		template<typename TSingleton, bool publicInstanceAccess> friend class vsb::StandaloneSingleton;
 
 		StringIDsRegistry();
-		~StringIDsRegistry();
+		~StringIDsRegistry() = default;
+
 
 		static size_t GetRegisteredIDsCount() noexcept;
 
@@ -69,11 +70,6 @@ namespace vsb::internal
 		std::int32_t RegisterStringInternal(std::string_view str, size_t hash);
 		static std::int32_t RegisterString(std::string_view str, size_t hash);
 
-		inline static StringIDsRegistry* s_pInstance {nullptr};
-		inline static bool s_bWasShutDown {false};
-
-		static StringIDsRegistry& GetInstance();
-		static StringIDsRegistry* GetInstanceInternal() noexcept;
 
 
 		[[nodiscard]] std::string_view GetStringInternal(std::int32_t index) const;

@@ -4,7 +4,6 @@
 
 
 #include "string_ids_registry.h"
-
 #include "vsb/debug.h"
 
 
@@ -17,21 +16,16 @@ namespace vsb::internal
 	}
 
 
-	StringIDsRegistry::~StringIDsRegistry()
-	{
-		s_pInstance = nullptr;
-		s_bWasShutDown = true;
-	}
-
-
 	size_t StringIDsRegistry::GetRegisteredIDsCount() noexcept
 	{
-		if (s_pInstance == nullptr)
+		auto* pInstance = GetInstanceIfAvailable();
+
+		if (pInstance == nullptr)
 		{
 			return 0;
 		}
 
-		return s_pInstance->m_strings.size();
+		return pInstance->m_strings.size();
 	}
 
 
@@ -60,32 +54,15 @@ namespace vsb::internal
 
 	std::int32_t StringIDsRegistry::RegisterString(std::string_view str, size_t hash)
 	{
-		if (s_bWasShutDown)
+		auto* pInstance = GetInstanceIfAvailable();
+
+		if (pInstance == nullptr)
 		{
 			VSB_BREAK;
 			return -1;
 		}
 
-		return GetInstance().RegisterStringInternal(str, hash);
-	}
-
-
-	StringIDsRegistry& StringIDsRegistry::GetInstance()
-	{
-	    if (s_pInstance == nullptr && !s_bWasShutDown)
-	    {
-	        s_pInstance = GetInstanceInternal();
-	    }
-
-	    VSB_ASSERT(s_pInstance != nullptr, "StringIDsRegistry accessed after shutdown");
-	    return *s_pInstance;
-	}
-
-
-	StringIDsRegistry* StringIDsRegistry::GetInstanceInternal() noexcept
-	{
-		static StringIDsRegistry staticInstance;
-		return &staticInstance;
+		return pInstance->RegisterStringInternal(str, hash);
 	}
 
 
@@ -104,11 +81,13 @@ namespace vsb::internal
 
 	std::string_view StringIDsRegistry::GetString(const std::int32_t index)
 	{
-		if (s_bWasShutDown)
+		auto* pInstance = GetInstanceIfAvailable();
+
+		if (pInstance == nullptr)
 		{
 			return "REGISTRY WAS SHUT DOWN";
 		}
 
-		return GetInstance().GetStringInternal(index);
+		return pInstance->GetStringInternal(index);
 	}
 }
