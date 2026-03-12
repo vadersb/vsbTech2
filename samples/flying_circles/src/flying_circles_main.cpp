@@ -285,9 +285,13 @@ int main()
 	VSBLOG_INFO("                   ----------=== FLYING CIRCLES SAMPLE STARTED ===----------                    ");
 	VSBInit();
 
+	std::string windowTitle = "Flying Circles [";
+	windowTitle.append(__TIMESTAMP__);
+	windowTitle.append("]");
+
 	SetTraceLogCallback(MyRaylibLogCallback);
 	SetConfigFlags(FLAG_VSYNC_HINT);
-	InitWindow(WindowWidth, WindowHeight, "Flying Circles");
+	InitWindow(WindowWidth, WindowHeight, windowTitle.c_str());
 	SetTargetFPS(0);
 
 	s_CircleShader = LoadShaderFromMemory(flying_circles::CircleVertexShader, flying_circles::CircleFragmentShader);

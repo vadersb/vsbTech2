@@ -3,12 +3,15 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "vsb/strings/string_id.h"
+#include "vsb/strings/static_string_id.h"
 
 #include <unordered_set>
 
 namespace
 {
     const vsb::StringID someGlobalString {"Some Global String!"};
+    constexpr vsb::StaticStringID staticGlobalString {"Some Global String!"};
+
     const vsb::StringID anotherGlobalString {"Another Global String!"};
 }
 
@@ -20,6 +23,9 @@ TEST_CASE("StringID - global strings", "[base][string_id]")
     REQUIRE( someGlobalString.IsEmpty() == false );
     REQUIRE( someGlobalString.GetString() == "Some Global String!" );
     REQUIRE( globalCopy == someGlobalString );
+
+	REQUIRE( staticGlobalString == someGlobalString );
+	REQUIRE( staticGlobalString == globalCopy );
 
     REQUIRE( anotherGlobalString.IsEmpty() == false );
     REQUIRE( anotherGlobalString.GetString() == "Another Global String!" );
@@ -127,6 +133,71 @@ TEST_CASE("StringID - trivially copyable", "[base][string_id]")
 	std::memcpy(&anotherCopy, &original, sizeof(vsb::StringID));
 
 	REQUIRE(anotherCopy.GetString() == "copy_me");
+}
+
+
+TEST_CASE("StaticStringID - implicit conversion", "[base][string_id]")
+{
+	const vsb::StaticStringID staticID{"static_test"};
+
+	const vsb::StringID resolved = staticID;
+	REQUIRE_FALSE( resolved.IsEmpty() );
+	REQUIRE( resolved.GetString() == "static_test" );
+}
+
+
+TEST_CASE("StaticStringID - caching", "[base][string_id]")
+{
+	const vsb::StaticStringID staticID{"cache_test"};
+
+	const vsb::StringID first = staticID;
+	const vsb::StringID second = staticID;
+
+	REQUIRE( first == second );
+}
+
+
+TEST_CASE("StaticStringID - compatible with StringID", "[base][string_id]")
+{
+	const vsb::StaticStringID staticID{"compat_test"};
+	const vsb::StringID directID{"compat_test"};
+
+	const vsb::StringID fromStatic = staticID;
+	REQUIRE( fromStatic == directID );
+}
+
+
+TEST_CASE("StaticStringID - deduplication with registry", "[base][string_id]")
+{
+	const size_t countBefore = vsb::StringID::GetRegisteredIDsCount();
+
+	const vsb::StaticStringID staticID{"dedup_static"};
+	const vsb::StringID directID{"dedup_static"};
+
+	// Trigger the lazy resolution
+	const vsb::StringID fromStatic = staticID;
+
+	const size_t countAfter = vsb::StringID::GetRegisteredIDsCount();
+
+	// Only one new entry regardless of creation path
+	REQUIRE( countAfter == countBefore + 1 );
+	REQUIRE( fromStatic == directID );
+}
+
+
+TEST_CASE("StaticStringID - as function-local static", "[base][string_id]")
+{
+	auto getId = []() -> vsb::StringID
+	{
+		static constexpr vsb::StaticStringID id{"local_static_test"};
+		return id;
+	};
+
+	const vsb::StringID first = getId();
+	const vsb::StringID second = getId();
+
+	REQUIRE( first == second );
+	REQUIRE( first.GetString() == "local_static_test" );
 }
 
 

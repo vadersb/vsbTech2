@@ -23,9 +23,10 @@ namespace vsb
 			{
 				s_CurrentCount++;
 #ifdef VSB_SINGLE_THREAD_CHECK
-				if (s_CurrentCount == 1)
+				if (!s_MainThreadIDWasInit)
 				{
 					s_MainThreadID = std::this_thread::get_id();
+					s_MainThreadIDWasInit = true;
 				}
 #endif
 			}
@@ -39,7 +40,16 @@ namespace vsb
 			static void CheckThreadAccess()
 			{
 				const auto currentThread = std::this_thread::get_id();
-				const bool sameThread = currentThread == s_MainThreadID;
+
+				if (!s_MainThreadIDWasInit)
+				{
+					s_MainThreadID = currentThread;
+					s_MainThreadIDWasInit = true;
+					return;
+				}
+
+				const auto mainThread = s_MainThreadID;
+				const bool sameThread = currentThread == mainThread;
 				VSB_ASSERT(sameThread, "Singleton is not thread safe");
 			}
 #endif
@@ -47,7 +57,8 @@ namespace vsb
 		private:
 
 #ifdef VSB_SINGLE_THREAD_CHECK
-			inline static std::thread::id s_MainThreadID;
+			inline static bool s_MainThreadIDWasInit = false;
+			inline static std::thread::id s_MainThreadID = std::thread::id();
 #endif
 
 			inline static int s_CurrentCount {0};
@@ -112,7 +123,7 @@ namespace vsb
 
 		static TSingleton* GetInstanceIfAvailableImpl()
 		{
-			if (s_pInstance == nullptr && s_WasShutDown == false)
+			if (s_pInstance == nullptr && s_WasShutDown == false) [[unlikely]]
 			{
 				Instantiate();
 			}

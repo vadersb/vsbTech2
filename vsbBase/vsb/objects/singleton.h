@@ -57,7 +57,7 @@ namespace vsb
 
 		static TSingleton& GetInstance()
 		{
-			if (!s_isInitialized)
+			if (!s_isInitialized) [[unlikely]]
 			{
 				Init();
 			}
