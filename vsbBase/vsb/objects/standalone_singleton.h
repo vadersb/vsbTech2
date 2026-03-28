@@ -58,7 +58,7 @@ namespace vsb
 
 #ifdef VSB_SINGLE_THREAD_CHECK
 			inline static bool s_MainThreadIDWasInit = false;
-			inline static std::thread::id s_MainThreadID = std::thread::id();
+			inline static std::thread::id s_MainThreadID;
 #endif
 
 			inline static int s_CurrentCount {0};
