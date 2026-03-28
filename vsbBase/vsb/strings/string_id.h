@@ -37,6 +37,7 @@ namespace vsb
 
 
 		bool operator==(const StringID& other) const noexcept {return m_index == other.m_index;}
+		bool operator==(std::string_view str) const noexcept {return str == GetString();}
 
 		[[nodiscard]] std::string_view GetString() const noexcept;
 
