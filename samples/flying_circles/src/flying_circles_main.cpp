@@ -209,7 +209,8 @@ namespace
 
 		if (hasRemovals)
 		{
-			std::erase(s_Circles, Ptr<FlyingCircle>{});
+			const Ptr<FlyingCircle> emptyCircle;
+			std::erase(s_Circles, Ptr<FlyingCircle> {} );
 		}
 
 		for (auto pCircle: s_Circles)

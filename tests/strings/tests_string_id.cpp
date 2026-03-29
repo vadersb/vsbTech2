@@ -16,7 +16,7 @@ namespace
 }
 
 
-TEST_CASE("StringID - global strings", "[base][string_id]")
+TEST_CASE("StringID - global strings", "[base][string_id]") // NOLINT(*-use-anonymous-namespace)
 {
     const vsb::StringID globalCopy {"Some Global String!"};
 
@@ -37,7 +37,7 @@ TEST_CASE("StringID - default construction", "[base][string_id]")
 {
 	const vsb::StringID empty{};
 	REQUIRE( empty.IsEmpty() );
-	REQUIRE( empty.GetString() == "" );
+	REQUIRE( empty.GetString() == "" ); // NOLINT(*-container-size-empty)
 }
 
 

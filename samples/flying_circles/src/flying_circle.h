@@ -17,7 +17,7 @@ using FlyingCirclePtr = vsb::Ptr<FlyingCircle>;
 
 class FlyingCircle : public vsb::ManagedObject
 {
-	USE_VSB_TYPES_INSIDE;
+	USE_VSB_TYPES_INSIDE
 
 public:
 
@@ -75,6 +75,6 @@ private:
 	float m_lifetime;
 	float m_age {0.0f};
 
-	vsb::vector<int> m_garbageArray {};
-	vsb::vector<vsb::SafePtr<FlyingCircle>> m_otherCircles {};
+	vsb::vector<int> m_garbageArray;
+	vsb::vector<vsb::SafePtr<FlyingCircle>> m_otherCircles;
 };

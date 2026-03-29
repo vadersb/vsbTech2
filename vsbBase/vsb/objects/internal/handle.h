@@ -18,6 +18,14 @@ namespace vsb::internal
 
 	struct Handle
 	{
+		Handle() = default;
+
+		~Handle() = default;
+
+		Handle(const Handle& other) = default;
+		Handle(Handle&& other) = default;
+		Handle& operator=(const Handle& other) = default;
+		Handle& operator=(Handle&& other) = default;
 
 		friend class vsb::Object;
 		friend class ObjectRegistry;
@@ -35,13 +43,8 @@ namespace vsb::internal
 
 		static const Handle Empty;
 
-		Handle() = default;
-		~Handle() = default;
 
-		Handle(const Handle& other) = default;
-		Handle(Handle&& other) = default;
-		Handle& operator=(const Handle& other) = default;
-		Handle& operator=(Handle&& other) = default;
+
 
 		//custom move constructor was removed to preserve Handle as a trivially copyable type
 
