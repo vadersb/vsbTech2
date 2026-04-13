@@ -106,7 +106,7 @@ void FlyingCircle::Destroy()
 
 void FlyingCircle::Draw() const
 {
-	float alpha = CalculateAlpha();
+	const float alpha = CalculateAlpha();
 	Color color(m_baseColor.r, m_baseColor.g, m_baseColor.b, static_cast<unsigned char>(alpha * 255));
 	DrawCircle(static_cast<int>(m_x), static_cast<int>(m_y), GetCurRadius(), color);
 }
