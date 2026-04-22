@@ -76,7 +76,7 @@ namespace
 
 int main()
 {
-	internal::ObjectRegistryFinalizer objectRegistryFinalizer;
+	VSBInit();
 
 	VSBLOG_INFO("objects in registry: {}", internal::ObjectRegistry::GetCurrentlyRegisteredObjectsCount());
 
@@ -226,7 +226,7 @@ int main()
 
 	//std::cin >> str;
 
-	DestructionCentral::Uninit();
+	VSBUninit();
 
 	return 0;
 }

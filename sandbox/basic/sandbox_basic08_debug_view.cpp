@@ -101,42 +101,47 @@ static std::string s_SomeString = "some string";
 
 int main()
 {
-	VSBLOG_INFO("Debug viewing testing");
+	VSBInit();
 
-	BasicInherited b1(123);
-	BasicInherited b2(456);
+	{
+		VSBLOG_INFO("Debug viewing testing");
 
-	ExtendedInherited ex1("tra la la", 111);
-	ExtendedInherited ex2("okokok!", 333);
+		BasicInherited b1(123);
+		BasicInherited b2(456);
 
-
-
-	SafePtr<Base> p1(&b1);
-	SafePtr<Base> p2(&b2);
-	SafePtr<Base> p3(&ex1);
-	SafePtr<Base> p4(&ex2);
-
-	std::vector<SafePtr<Base>> vec;
-
-	vec.push_back(p1);
-	vec.push_back(p2);
-	vec.push_back(p3);
-	vec.push_back(p4);
-
-	VSBLOG_INFO("is valid: {}", vec[3].IsValid());
-
-	VSBLOG_INFO("type id of vec[3]: {}", typeid(*(vec[3].Get())).name());
+		ExtendedInherited ex1("tra la la", 111);
+		ExtendedInherited ex2("okokok!", 333);
 
 
-	std::vector<Base*> pointersVec;
 
-	pointersVec.push_back(p1.Get());
-	pointersVec.push_back(p2.Get());
-	pointersVec.push_back(p3.Get());
-	pointersVec.push_back(p4.Get());
+		SafePtr<Base> p1(&b1);
+		SafePtr<Base> p2(&b2);
+		SafePtr<Base> p3(&ex1);
+		SafePtr<Base> p4(&ex2);
 
-	VSBLOG_INFO("type id of pointersVec[3]: {}", typeid(*(pointersVec[3])).name());
+		std::vector<SafePtr<Base>> vec;
 
-	VSBLOG_INFO(s_SomeString);
+		vec.push_back(p1);
+		vec.push_back(p2);
+		vec.push_back(p3);
+		vec.push_back(p4);
 
+		VSBLOG_INFO("is valid: {}", vec[3].IsValid());
+
+		VSBLOG_INFO("type id of vec[3]: {}", typeid(*(vec[3].Get())).name());
+
+
+		std::vector<Base*> pointersVec;
+
+		pointersVec.push_back(p1.Get());
+		pointersVec.push_back(p2.Get());
+		pointersVec.push_back(p3.Get());
+		pointersVec.push_back(p4.Get());
+
+		VSBLOG_INFO("type id of pointersVec[3]: {}", typeid(*(pointersVec[3])).name());
+
+		VSBLOG_INFO(s_SomeString);
+	}
+
+	VSBUninit();
 }

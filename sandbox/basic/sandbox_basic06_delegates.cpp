@@ -46,6 +46,8 @@ void TestLambdaFunc(int i, bool b)
 
 int main()
 {
+	vsb::VSBInit();
+
 	VSBLOG_INFO("Delegate size: {} bytes", sizeof(TestDelegate));
 
 	TestDelegate d1;
@@ -109,6 +111,8 @@ int main()
 		{VSBLOG_INFO("Captured values: {}, {}, {}, Lambda called with i: {} and b: {}", capturedValue, value2, value3, i, b);});
 
 	d8(10, false);
+
+	vsb::VSBUninit();
 
 	return 0;
 }

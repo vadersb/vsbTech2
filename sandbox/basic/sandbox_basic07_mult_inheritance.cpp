@@ -165,33 +165,38 @@ namespace
 
 int main()
 {
-	VSBLOG_INFO("Multiple inheritance testing");
+	vsb::VSBInit();
 
-	auto viewSize = sizeof(DerivedItemView);
-	VSBLOG_INFO("Size of DerivedItemView: {} bytes", viewSize);
+	{
+		VSBLOG_INFO("Multiple inheritance testing");
 
-
-	DerivedItem item;
-	DerivedItemView itemView;
-
-	item.SetString("Hello!");
-	item.SetPosition(123, 456);
-
-	item.RegisterView(&itemView);
-
-	item.DoBaseItemStuff();
-	item.DoDerivedItemStuff();
-
-	item.UnregisterView();
-	item.DoDerivedItemStuff();
-	item.DoBaseItemStuff();
+		auto viewSize = sizeof(DerivedItemView);
+		VSBLOG_INFO("Size of DerivedItemView: {} bytes", viewSize);
 
 
-	ClassA a;
-	ClassB b;
+		DerivedItem item;
+		DerivedItemView itemView;
 
-	ClassA* pA = vsb::SafeCast<ClassA>(&b);
+		item.SetString("Hello!");
+		item.SetPosition(123, 456);
 
-	VSBLOG_INFO("pA = {}", reinterpret_cast<intptr_t>(pA));
+		item.RegisterView(&itemView);
 
+		item.DoBaseItemStuff();
+		item.DoDerivedItemStuff();
+
+		item.UnregisterView();
+		item.DoDerivedItemStuff();
+		item.DoBaseItemStuff();
+
+
+		ClassA a;
+		ClassB b;
+
+		ClassA* pA = vsb::SafeCast<ClassA>(&b);
+
+		VSBLOG_INFO("pA = {}", reinterpret_cast<intptr_t>(pA));
+	}
+
+	vsb::VSBUninit();
 }

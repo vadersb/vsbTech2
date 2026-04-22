@@ -6,6 +6,7 @@
 #include <string_view>
 #include <bit>
 #include <array>
+#include <tuple>
 
 #include "constexpr-xxh3/constexpr-xxh3.h"
 
@@ -17,12 +18,36 @@ namespace vsb
 	inline constexpr static Hash64 NullHash64 = 0;
 
 
+	//forward declaration so CalculateHash64 for tuple can use GetHash64
+	template<typename T>
+	constexpr Hash64 GetHash64(const T& v) noexcept;
+
+	//hash combine (boost-style)
+	constexpr Hash64 CombineHash64(Hash64 seed, Hash64 value) noexcept
+	{
+		return seed ^ (value + 0x9e3779b97f4a7c15ULL + (seed << 12) + (seed >> 4));
+	}
+
 	//hash calculation
 	template<typename T>
 	constexpr Hash64 CalculateHash64(const T &v) noexcept
 	{
 		auto buffer = std::bit_cast<std::array<std::byte, sizeof(T)>>(v);
 		return constexpr_xxh3::XXH3_64bits_const(buffer);
+	}
+
+	//hash calculation for tuples - hash each element and combine
+	template<typename... Ts>
+	constexpr Hash64 CalculateHash64(const std::tuple<Ts...>& t) noexcept
+	{
+		return std::apply(
+			[](const Ts&... elems) constexpr noexcept
+			{
+				Hash64 seed = 0;
+				((seed = CombineHash64(seed, GetHash64(elems))), ...);
+				return seed;
+			},
+			t);
 	}
 
 
