@@ -6,7 +6,10 @@
 
 namespace vsb::internal
 {
-	ObjectRegistry* ObjectRegistry::s_pInstance = nullptr;
+	namespace
+	{
+		constinit ObjectRegistry* g_pRegistry = nullptr;
+	}
 
 	Handle ObjectRegistry::RegisterObject(Object* pObject, ObjectHint hint)
 	{
@@ -129,9 +132,15 @@ namespace vsb::internal
 
 	ObjectRegistry & ObjectRegistry::GetInstance()
 	{
-		VSB_ASSERT(s_pInstance != nullptr, "ObjectRegistry instance is null!");
+		VSB_ASSERT(g_pRegistry != nullptr, "ObjectRegistry instance is null!");
 		VSB_CHECK_THREAD();
-		return *s_pInstance;
+		return *g_pRegistry;
+	}
+
+
+	ObjectRegistry* ObjectRegistry::GetInstancePointer()
+	{
+		return g_pRegistry;
 	}
 
 
@@ -161,7 +170,7 @@ namespace vsb::internal
 
 		m_freeIndices = std::stack(std::move(initialIndices));
 
-		s_pInstance = this;
+		g_pRegistry = this;
 	}
 
 
@@ -234,7 +243,7 @@ namespace vsb::internal
 	{
 		VSBLOG_INFO("Wrapping up ObjectRegistry.");
 
-		if (s_pInstance == nullptr)
+		if (g_pRegistry == nullptr)
 		{
 			VSBLOG_CRITICAL("ObjectRegistry is already terminated!");
 			return;
@@ -274,6 +283,6 @@ namespace vsb::internal
 
 	ObjectRegistry::~ObjectRegistry()
 	{
-		s_pInstance = nullptr;
+		g_pRegistry = nullptr;
 	}
 }

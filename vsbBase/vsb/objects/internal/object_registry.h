@@ -67,8 +67,8 @@ namespace vsb::internal
 		[[nodiscard]] Object* GetObject(const Handle& handle) const;
 		[[nodiscard]] bool    ValidateHandle(const Handle& handle) const;
 
-		static ObjectRegistry* s_pInstance;
 		static ObjectRegistry& GetInstance();
+		static ObjectRegistry* GetInstancePointer();
 
 		void ExpandStorage();
 

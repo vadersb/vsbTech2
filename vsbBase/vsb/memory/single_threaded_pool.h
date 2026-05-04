@@ -87,12 +87,30 @@ namespace vsb::memory
 
 	private:
 
-		static constexpr std::array s_BucketElementSizes {8ul, 16ul, 32ul, 64ul, 128ul, 256ul, 512ul, 1024ul, 2048ul, 4096ul, 8192ul, 16384ul, 16384ul * 2ul, 16384ul * 2ul};
-		static constexpr std::array s_BucketElementsCounts {64ul * 1024, 64ul * 1024, 64ul * 1024, 32ul * 1024, 16ul * 1024, 8ul * 1024, 8ul * 1024, 8ul * 1024, 4ul * 1024, 4ul * 1024, 256ul, 128ul, 64ul, 64ul};
+		struct BucketSettings
+		{
+			size_t elementSize;
+			size_t elementsCount;
+		};
 
-		static constexpr int BucketsCount {(int)s_BucketElementSizes.size()};
+		static constexpr std::array s_BucketSettings {
+			BucketSettings {8ul, 64ul * 1024},
+			BucketSettings {16ul, 64ul * 1024},
+			BucketSettings {32ul, 64ul * 1024},
+			BucketSettings {64ul, 32ul * 1024},
+			BucketSettings {128ul, 16ul * 1024},
+			BucketSettings {256ul, 8ul * 1024},
+			BucketSettings {512ul, 8ul * 1024},
+			BucketSettings {1024ul, 8ul * 1024},
+			BucketSettings {2048ul, 4ul * 1024},
+			BucketSettings {4096ul, 4ul * 1024},
+			BucketSettings {8192ul, 256ul},
+			BucketSettings {16384ul, 128ul},
+			BucketSettings {16384ul * 2ul, 64ul},
+			BucketSettings {16384ul * 2ul, 64ul},
+		};
 
-		static_assert(s_BucketElementSizes.size() == s_BucketElementsCounts.size(), "sizes should match!");
+		static constexpr int BucketsCount = static_cast<int>(s_BucketSettings.size());
 
 		static inline int64_t s_ObjectsCount {0};
 		static inline bool s_WasInit {false};
@@ -101,7 +119,7 @@ namespace vsb::memory
 		{
 			for (int i = 0; i < BucketsCount; i++)
 			{
-				if (size <= s_BucketElementSizes[i])
+				if (size <= s_BucketSettings[i].elementSize)
 				{
 					return i;
 				}
@@ -114,8 +132,8 @@ namespace vsb::memory
 		template<int bucketIndex>
 		class Bucket
 		{
-			constexpr static size_t BucketElementSize = s_BucketElementSizes[bucketIndex];
-			constexpr static size_t BucketElementsCount = s_BucketElementsCounts[bucketIndex];
+			constexpr static size_t BucketElementSize = s_BucketSettings[bucketIndex].elementSize;
+			constexpr static size_t BucketElementsCount = s_BucketSettings[bucketIndex].elementsCount;
 			constexpr static size_t BucketSize = BucketElementSize * BucketElementsCount;
 
 			using PageElement = std::byte[BucketElementSize];
@@ -195,7 +213,7 @@ namespace vsb::memory
 
 		private:
 
-			inline static Bucket* s_pInstance {nullptr};
+			static constinit inline Bucket* s_pInstance {nullptr};
 			int m_pagesUsed {0};
 			std::stack<void*, std::vector<void*>> m_freeElements {};
 			std::vector<Page*> m_allocatedPages {};

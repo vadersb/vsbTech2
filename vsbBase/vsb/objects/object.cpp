@@ -16,18 +16,20 @@ namespace vsb
 
 	Object::~Object()
 	{
-		if (internal::ObjectRegistry::s_pInstance == nullptr)
+		auto* pRegistry = internal::ObjectRegistry::GetInstancePointer();
+
+		if (pRegistry == nullptr)
 		{
 			return;
 		}
 
-		internal::ObjectRegistry::GetInstance().UnregisterObject(m_handle);
+		pRegistry->UnregisterObject(m_handle);
 	}
 
 
 	internal::Handle Object::RegisterHandle(ObjectHint objectHint)
 	{
-		if (internal::ObjectRegistry::s_pInstance == nullptr)
+		if (internal::ObjectRegistry::GetInstancePointer() == nullptr)
 		{
 			VSB_ASSERT(false, "ObjectRegistry is terminated");
 			return internal::Handle::Empty;

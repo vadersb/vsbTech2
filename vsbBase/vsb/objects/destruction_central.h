@@ -81,6 +81,8 @@ namespace vsb
 
 			void Add(ManagedObject* pObject)
 			{
+				VSB_ASSERT(pObject != nullptr, "pObject shouldn't be null")
+
 				if (m_targetMainList)
 				{
 					m_objectsToDestroy.push_back(pObject);
@@ -176,7 +178,7 @@ namespace vsb
 			std::vector<ManagedObject*> m_objectsToDestroy {};
 			std::vector<ManagedObject*> m_objectsToDestroyExtra {};
 
-			static inline DestructionList* s_pInstance {nullptr};
+			static constinit inline DestructionList* s_pInstance {nullptr};
 		};
 
 

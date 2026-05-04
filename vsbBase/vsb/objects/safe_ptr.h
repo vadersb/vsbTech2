@@ -19,7 +19,7 @@ namespace vsb
 
 	public:
 
-		SafePtr() : m_pointer(nullptr), m_handle() {}
+		SafePtr() : m_pointer(nullptr) {}
 		~SafePtr() = default;
 
 		SafePtr(const SafePtr&) = default;

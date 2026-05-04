@@ -99,7 +99,7 @@ namespace vsb
 
 	private:
 
-		static inline TSingleton* s_pInstance {nullptr};
-		static inline bool s_isInitialized {false};
+		static constinit inline TSingleton* s_pInstance {nullptr};
+		static constinit inline bool s_isInitialized {false};
 	};
 }

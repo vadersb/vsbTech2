@@ -140,11 +140,7 @@ namespace vsb
 			static TSingleton instance;
 		}
 
-
-		static inline TSingleton* s_pInstance {nullptr};
-		static inline bool s_WasShutDown {false};
-
-
-
+		static constinit inline TSingleton* s_pInstance {nullptr};
+		static constinit inline bool s_WasShutDown {false};
 	};
 }
